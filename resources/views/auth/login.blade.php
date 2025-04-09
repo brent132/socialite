@@ -21,16 +21,16 @@
         <!-- Right Side - Form Section -->
         <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
             <div class="w-full max-w-md">
-                <div class="bg-white shadow-md rounded-lg px-8 py-6">
-                    <h2 class="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+                <div class="bg-white dark:bg-slate-800 shadow-md rounded-lg px-8 py-6">
+                    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">Welcome Back</h2>
 
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
                         <div class="mb-4">
-                            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">{{ __('Email Address') }}</label>
+                            <label for="email" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">{{ __('Email Address') }}</label>
                             <input id="email" type="email" 
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('email') border-red-500 @enderror" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-slate-700 dark:border-slate-600 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 @error('email') border-red-500 @enderror" 
                                 name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
                             @error('email')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
@@ -38,9 +38,9 @@
                         </div>
 
                         <div class="mb-6">
-                            <label for="password" class="block text-gray-700 text-sm font-bold mb-2">{{ __('Password') }}</label>
+                            <label for="password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">{{ __('Password') }}</label>
                             <input id="password" type="password" 
-                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('password') border-red-500 @enderror" 
+                                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-slate-700 dark:border-slate-600 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 @error('password') border-red-500 @enderror" 
                                 name="password" required autocomplete="current-password">
                             @error('password')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
@@ -50,28 +50,25 @@
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center">
                                 <input class="mr-2" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="text-sm text-gray-600" for="remember">
-                                    {{ __('Remember Me') }}
-                                </label>
+                                <label class="text-sm text-gray-700 dark:text-gray-300" for="remember">{{ __('Remember Me') }}</label>
                             </div>
+                            
                             @if (Route::has('password.request'))
-                                <a class="text-sm text-blue-500 hover:text-blue-700" href="{{ route('password.request') }}">
-                                    {{ __('Forgot Password?') }}
-                                </a>
+                            <a class="inline-block align-baseline font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" href="{{ route('password.request') }}">
+                                {{ __('Forgot Password?') }}
+                            </a>
                             @endif
                         </div>
 
-                        <div class="mb-6">
-                            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        <div class="flex items-center justify-between">
+                            <button type="submit" class="bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
                                 {{ __('Login') }}
                             </button>
-                        </div>
-
-                        <div class="text-center">
-                            <p class="text-gray-600">Don't have an account?</p>
-                            <a href="{{ route('register') }}" class="block mt-2 text-blue-500 hover:text-blue-700 font-semibold">
-                                Create an Account
-                            </a>
+                            
+                            <div class="text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Don't have an account?</span>
+                                <a href="{{ route('register') }}" class="ml-1 font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">Register</a>
+                            </div>
                         </div>
                     </form>
                 </div>

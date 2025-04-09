@@ -3,15 +3,15 @@
 @section('content')
 <div class="container max-w-[640px] mx-auto py-4">
     @foreach($posts as $post)
-    <div class="bg-white shadow-sm rounded-xl overflow-hidden mb-8">
+    <div class="bg-white dark:bg-slate-800 shadow-sm rounded-xl overflow-hidden mb-8">
         <!-- Header with user info -->
-        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+        <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-slate-700">
             <div class="flex items-center gap-3">
                 <div>
-                    <img src="{{ $post->user->profile->profileImage() }}" alt="" class="w-[40px] h-[40px] rounded-full object-cover border-2 border-gray-100">
+                    <img src="{{ $post->user->profile->profileImage() }}" alt="" class="w-[40px] h-[40px] rounded-full object-cover border-2 border-gray-100 dark:border-slate-600">
                 </div>
                 <h3 class="text-sm font-semibold">
-                    <a href="/profile/{{ $post->user->id }}" class="hover:text-blue-500 transition-colors">{{ $post->user->username }}</a>
+                    <a href="/profile/{{ $post->user->id }}" class="hover:text-blue-500 transition-colors dark:text-gray-100">{{ $post->user->username }}</a>
                 </h3>
             </div>
             <div>
@@ -32,9 +32,12 @@
         </div>
 
         <!-- Post Image -->
-        <div class="w-full aspect-square">
+        <div class="w-full aspect-square bg-gray-50 dark:bg-slate-900">
             <a href="/p/{{ $post->id }}">
-                <img src="/storage/{{ $post->image }}" alt="Post by {{ $post->user->username }}" class="w-full h-full object-cover">
+                <img src="/storage/{{ $post->image }}" 
+                     alt="Post by {{ $post->user->username }}" 
+                     class="w-full h-full object-cover"
+                     onerror="this.onerror=null; this.src='/images/post-icon.svg'; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-12');">
             </a>
         </div>
 
@@ -54,7 +57,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                         </svg>
                         @endif
-                        <span class="text-sm font-medium" id="post-{{ $post->id }}-like-count">{{ $post->likes->count() }}</span>
+                        <span class="text-sm font-medium dark:text-gray-200" id="post-{{ $post->id }}-like-count">{{ $post->likes->count() }}</span>
                     </button>
                 </form>
 
@@ -63,13 +66,13 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    <span class="text-sm font-medium" id="post-{{ $post->id }}-comment-count">{{ $post->comments ? $post->comments->count() : 0 }}</span>
+                    <span class="text-sm font-medium dark:text-gray-200" id="post-{{ $post->id }}-comment-count">{{ $post->comments ? $post->comments->count() : 0 }}</span>
                 </a>
             </div>
 
             <!-- Caption -->
             <div class="mb-4">
-                <p class="text-sm">
+                <p class="text-sm dark:text-gray-200">
                     <span class="font-semibold">{{ $post->user->username }}</span> {{ $post->caption }}
                 </p>
             </div>
@@ -83,7 +86,7 @@
                         <textarea 
                             id="commentText-{{ $post->id }}"
                             placeholder="Add a comment..." 
-                            class="w-full border rounded-md px-3 py-2 pr-16 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            class="w-full border rounded-md px-3 py-2 pr-16 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white dark:placeholder-gray-400"
                             rows="1"
                             required
                         ></textarea>
@@ -114,17 +117,17 @@
                         <div class="flex-1">
                             <div class="flex justify-between items-start">
                                 <div>
-                                    <span class="font-semibold text-sm">{{ $comment->user->username }}</span>
-                                    <span class="text-sm">{{ $comment->comment }}</span>
+                                    <span class="font-semibold text-sm dark:text-gray-100">{{ $comment->user->username }}</span>
+                                    <span class="text-sm dark:text-gray-200">{{ $comment->comment }}</span>
                                 </div>
                                 @if($comment->user_id == auth()->id())
                                 <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->comment) }}')">
+                                    <button type="button" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->comment) }}')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <button type="button" class="text-gray-500 hover:text-red-500" onclick="deleteComment('{{ $comment->id }}')">
+                                    <button type="button" class="text-gray-500 dark:text-gray-400 hover:text-red-500" onclick="deleteComment('{{ $comment->id }}')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -133,7 +136,7 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-2 mt-1">
-                                <div class="text-xs {{ $comment->likes->where('user_id', auth()->id())->count() > 0 ? 'text-red-500' : 'text-gray-500' }} hover:text-gray-700 flex items-center gap-1">
+                                <div class="text-xs {{ $comment->likes->where('user_id', auth()->id())->count() > 0 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400' }} hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1">
                                     <svg 
                                         xmlns="http://www.w3.org/2000/svg" 
                                         class="h-3 w-3" 
@@ -170,11 +173,11 @@
                 <!-- Load More / View All Comments -->
                 <div class="flex justify-between items-center mt-2">
                     @if($post->comments->count() > 5)
-                    <a href="/p/{{ $post->id }}#comments" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    <a href="/p/{{ $post->id }}#comments" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium">
                         Load more
                     </a>
                     @endif
-                    <a href="/p/{{ $post->id }}#comments" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                    <a href="/p/{{ $post->id }}#comments" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium">
                         View all {{ $post->comments->count() }} comments
                     </a>
                 </div>
@@ -191,19 +194,19 @@
 <!-- Edit Comment Modal -->
 <div id="editCommentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
     <div class="flex items-center justify-center h-full w-full">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
-            <h3 class="text-lg font-semibold mb-4">Edit Comment</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6 relative">
+            <h3 class="text-lg font-semibold mb-4 dark:text-white">Edit Comment</h3>
             <form id="editCommentForm" method="POST">
                 @csrf
                 @method('PATCH')
                 <textarea 
                     id="editCommentText" 
                     name="comment"
-                    class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden dark:bg-slate-700 dark:border-slate-600 dark:text-white"
                     rows="3"
                 ></textarea>
                 <div class="flex justify-end mt-4 gap-2">
-                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100">
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">

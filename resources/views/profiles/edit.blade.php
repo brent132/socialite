@@ -41,15 +41,15 @@
         </div>
 
         <!-- Profile Picture Form -->
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
-            <h2 class="text-xl font-semibold mb-2 text-gray-800">Profile Picture</h2>
-            <p class="text-gray-500 text-sm mb-6">Recommended size: 400x400px</p>
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-100">Profile Picture</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Recommended size: 400x400px</p>
             
             <div class="flex flex-col items-center">
                 <div 
                     @click="$refs.fileInput.click()" 
                     class="cursor-pointer w-48 h-48 rounded-full transition-all duration-300 relative group"
-                    :class="{'border-2 border-dashed border-gray-300 hover:border-primary': !imageUrl}"
+                    :class="{'border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary': !imageUrl}"
                 >
                     <!-- Preview Image -->
                     <template x-if="imageUrl">
@@ -59,10 +59,10 @@
                     <!-- Upload Icon and Text -->
                     <template x-if="!imageUrl">
                         <div class="w-full h-full flex flex-col items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 dark:text-gray-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p class="text-sm text-gray-500">Click to upload photo</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Click to upload photo</p>
                         </div>
                     </template>
 
@@ -81,15 +81,15 @@
         </div>
 
         <!-- Background Picture Form -->
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
-            <h2 class="text-xl font-semibold mb-2 text-gray-800">Profile Background</h2>
-            <p class="text-gray-500 text-sm mb-6">Recommended size: 1500x500px</p>
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md transition-shadow duration-300">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-100">Profile Background</h2>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Recommended size: 1500x500px</p>
             
             <div class="flex flex-col items-center">
                 <div 
                     @click="$refs.backgroundInput.click()" 
                     class="cursor-pointer w-full h-48 rounded-xl transition-all duration-300 relative group"
-                    :class="{'border-2 border-dashed border-gray-300 hover:border-primary': !backgroundUrl}"
+                    :class="{'border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary': !backgroundUrl}"
                 >
                     <!-- Preview Image -->
                     <template x-if="backgroundUrl">
@@ -99,10 +99,10 @@
                     <!-- Upload Icon and Text -->
                     <template x-if="!backgroundUrl">
                         <div class="w-full h-full flex flex-col items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 dark:text-gray-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p class="text-sm text-gray-500">Click to upload background</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Click to upload background</p>
                         </div>
                     </template>
 

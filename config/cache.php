@@ -19,6 +19,50 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cache TTL Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the time-to-live (TTL) values for different
+    | types of cache entries to optimize performance and freshness.
+    |
+    */
+    
+    'ttl' => env('CACHE_TTL', 600),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Key Prefix
+    |--------------------------------------------------------------------------
+    |
+    | When utilizing the APC, database, memcached, Redis, or DynamoDB cache
+    | stores there might be other applications using the same cache. For
+    | that reason, you may prefix every cache key to avoid collisions.
+    |
+    */
+
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache TTL Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the time-to-live (TTL) values for different
+    | types of cache entries to optimize performance and freshness.
+    |
+    */
+    
+    'ttl' => [
+        'profile_stats' => env('CACHE_TTL_PROFILE_STATS', 300),
+        'user_data' => env('CACHE_TTL_USER_DATA', 1800),
+        'posts' => env('CACHE_TTL_POSTS', 600),
+        'comments' => env('CACHE_TTL_COMMENTS', 120),
+        'images' => env('CACHE_TTL_IMAGES', 86400),
+        'search_results' => env('CACHE_TTL_SEARCH', 300),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |
@@ -26,12 +70,16 @@ return [
     | well as their drivers. You may even define multiple stores for the
     | same cache driver to group types of items stored in your caches.
     |
-    | Supported drivers: "array", "database", "file", "memcached",
-    |                    "redis", "dynamodb", "octane", "null"
+    | Supported drivers: "apc", "array", "database", "file",
+    |         "memcached", "redis", "dynamodb", "octane", "null"
     |
     */
 
     'stores' => [
+
+        'apc' => [
+            'driver' => 'apc',
+        ],
 
         'array' => [
             'driver' => 'array',
@@ -40,10 +88,9 @@ return [
 
         'database' => [
             'driver' => 'database',
-            'connection' => env('DB_CACHE_CONNECTION'),
-            'table' => env('DB_CACHE_TABLE', 'cache'),
-            'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'),
-            'lock_table' => env('DB_CACHE_LOCK_TABLE'),
+            'table' => 'cache',
+            'connection' => null,
+            'lock_connection' => null,
         ],
 
         'file' => [
@@ -73,8 +120,8 @@ return [
 
         'redis' => [
             'driver' => 'redis',
-            'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
-            'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
+            'connection' => 'cache',
+            'lock_connection' => 'default',
         ],
 
         'dynamodb' => [
@@ -94,15 +141,51 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Key Prefix
+    | Cache Key Pattern
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
+    | When utilizing multiple cache stores, it's useful to define key patterns
+    | for common cache keys to ensure consistency across the application.
     |
     */
+    
+    'key_patterns' => [
+        'user' => 'user.{id}',
+        'user_profile' => 'user.{id}.profile',
+        'user_posts' => 'user.{id}.posts.{page}',
+        'post' => 'post.{id}',
+        'post_comments' => 'post.{id}.comments.{page}',
+        'timeline' => 'timeline.{user_id}.{page}',
+    ],
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Optimization
+    |--------------------------------------------------------------------------
+    |
+    | Configure additional cache optimization parameters like compression
+    | and serialization methods.
+    |
+    */
+    
+    'optimization' => [
+        'compression' => env('CACHE_COMPRESSION', true),
+        'serializer' => env('CACHE_SERIALIZER', 'php'),
+    ],
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Locks
+    |--------------------------------------------------------------------------
+    |
+    | Control how long locks should be maintained for expensive operations.
+    |
+    */
+    
+    'locks' => [
+        'ttl' => env('CACHE_LOCK_TTL', 60),  // Default lock TTL in seconds
+        'retry_after' => env('CACHE_LOCK_RETRY', 5), // Retry after seconds
+        'retry_count' => env('CACHE_LOCK_RETRY_COUNT', 3), // Number of retries
+    ],
 
 ];

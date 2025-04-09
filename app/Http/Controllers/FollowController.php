@@ -2,31 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use App\Models\User;
+use App\Services\FollowService;
+use App\DTOs\ApiResponse;
+use Illuminate\Support\Facades\Auth;
 
 class FollowController extends Controller
 {
+    protected $followService;
+
+    public function __construct(FollowService $followService)
+    {
+        $this->followService = $followService;
+        $this->middleware('auth');
+    }
+
     public function follow($id)
     {
         $user = Auth::user();
-
-        if ($user->id !== $id) {
-            $user->following()->attach($id);
-
-            // Clear cache for both users
-            $this->clearUserCache($user->id);
-            $this->clearUserCache($id);
-        }
+        $success = $this->followService->followUser($user, $id);
 
         // Check if request is AJAX
         if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'following' => true
-            ]);
+            return response()->json($success 
+                ? ApiResponse::success(['following' => true], 'Successfully followed user')
+                : ApiResponse::error('Unable to follow user')
+            );
         }
 
         return redirect()->back();
@@ -35,36 +36,20 @@ class FollowController extends Controller
     public function unfollow($id)
     {
         $user = Auth::user();
-        $user->following()->detach($id);
-
-        // Clear cache for both users
-        $this->clearUserCache($user->id);
-        $this->clearUserCache($id);
+        $this->followService->unfollowUser($user, $id);
 
         // Check if request is AJAX
         if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'following' => false
-            ]);
+            return response()->json(ApiResponse::success(['following' => false], 'Successfully unfollowed user'));
         }
 
         return redirect()->back();
     }
 
-    private function clearUserCache($userId)
-    {
-        Cache::forget('count.followers.' . $userId);
-        Cache::forget('count.following.' . $userId);
-    }
-
     public function followingPage(User $user)
     {
         $following = $user->following;
-
-        $notFollowing = User::whereNotIn('id', $user->following->pluck('id'))
-            ->where('id', '!=', $user->id)
-            ->get();
+        $notFollowing = $this->followService->getUsersNotFollowing($user, 10);
 
         return view('profiles.following', compact('user', 'following', 'notFollowing'));
     }
