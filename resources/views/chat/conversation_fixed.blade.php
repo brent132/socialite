@@ -32,18 +32,20 @@
                 <form id="chat-form" class="flex gap-2">
                     <input type="hidden" id="receiver_id" value="{{ $user->id }}">
                     <div class="flex-1 relative">
-                        <textarea
-                            id="message"
-                            rows="1"
-                            class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none h-[40px]"
+                        <textarea 
+                            id="message" 
+                            rows="1" 
+                            class="block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none h-[40px]" 
                             placeholder="Type a message..."
-                            style="overflow-y: hidden"></textarea>
+                            style="overflow-y: hidden"
+                        ></textarea>
                         <div id="message-hidden" class="invisible absolute top-0 left-0 px-4 py-2 border border-transparent w-full break-words"></div>
                     </div>
-                    <button
-                        type="submit"
-                        id="send-button"
-                        class="shrink-0 flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-[40px] min-w-[80px]">
+                    <button 
+                        type="submit" 
+                        id="send-button" 
+                        class="shrink-0 flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-[40px] min-w-[80px]"
+                    >
                         <span>Send</span>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
@@ -56,11 +58,7 @@
 </div>
 
 <script>
-    const authUserId = {
-        {
-            Auth::id()
-        }
-    };
+    const authUserId = {{ Auth::id() }};
     const receiverId = document.getElementById('receiver_id').value;
     const chatBox = document.getElementById('chat-box');
     const sendButton = document.getElementById('send-button');
@@ -71,7 +69,7 @@
     function autoResize() {
         // Copy the text to the hidden div to measure its height
         messageHidden.textContent = messageInput.value + '\n';
-
+        
         // Set the textarea height to match the hidden div
         messageInput.style.height = 'auto';
         messageInput.style.height = Math.max(40, messageHidden.scrollHeight) + 'px';

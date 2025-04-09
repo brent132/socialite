@@ -21,8 +21,8 @@ class FollowController extends Controller
             $this->clearUserCache($id);
         }
 
-        // Check if request is AJAX
-        if (request()->ajax()) {
+        // Check if request expects JSON
+        if (request()->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'following' => true
@@ -41,8 +41,8 @@ class FollowController extends Controller
         $this->clearUserCache($user->id);
         $this->clearUserCache($id);
 
-        // Check if request is AJAX
-        if (request()->ajax()) {
+        // Check if request expects JSON
+        if (request()->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'following' => false

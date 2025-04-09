@@ -147,7 +147,7 @@ class ProfilesController extends Controller
 
         $user->profile->update($data);
 
-        if (request()->wantsJson()) {
+        if (request()->expectsJson()) {
             return response()->json(['success' => true]);
         }
 

@@ -56,13 +56,24 @@
                                     body: JSON.stringify({})
                                 })
                                 .then(response => {
-                                    if (response.ok) {
-                                        this.isFollowing = !this.isFollowing;
-                                        // Update follower count
-                                        this.followerCount += this.isFollowing ? 1 : -1;
-                                        // Update the follower count in the stats section
-                                        document.querySelector('#followerCount').textContent = this.followerCount;
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
                                     }
+                                    // Check if the response is JSON
+                                    const contentType = response.headers.get('content-type');
+                                    if (contentType && contentType.includes('application/json')) {
+                                        return response.json();
+                                    } else {
+                                        // If not JSON, just return a success object
+                                        return { success: true };
+                                    }
+                                })
+                                .then(data => {
+                                    this.isFollowing = !this.isFollowing;
+                                    // Update follower count
+                                    this.followerCount += this.isFollowing ? 1 : -1;
+                                    // Update the follower count in the stats section
+                                    document.querySelector('#followerCount').textContent = this.followerCount;
                                     this.isLoading = false;
                                 })
                                 .catch(error => {

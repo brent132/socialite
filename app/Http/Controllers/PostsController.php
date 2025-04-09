@@ -46,14 +46,14 @@ class PostsController extends Controller
             // Clear post count cache
             Cache::forget('count.posts.' . auth()->id());
 
-            if (request()->wantsJson()) {
+            if (request()->expectsJson()) {
                 return response()->json(['message' => 'Post created successfully']);
             }
 
             return redirect('/profile/' . auth()->user()->id)->with('success', 'Post created successfully');
         } catch (\Exception $e) {
-            if (request()->wantsJson()) {
-                return response()->json(['message' => 'Failed to create post'], 422);
+            if (request()->expectsJson()) {
+                return response()->json(['message' => $e->getMessage() ?: 'Failed to create post'], 422);
             }
 
             return back()->withErrors(['error' => 'Failed to create post'])->withInput();
@@ -97,7 +97,7 @@ class PostsController extends Controller
 
             $count = $post->likes()->count();
 
-            if (request()->wantsJson()) {
+            if (request()->expectsJson()) {
                 return response()->json([
                     'liked' => $liked,
                     'count' => $count
@@ -106,9 +106,9 @@ class PostsController extends Controller
 
             return redirect()->back();
         } catch (\Exception $e) {
-            if (request()->wantsJson()) {
+            if (request()->expectsJson()) {
                 return response()->json([
-                    'error' => 'Failed to process like'
+                    'error' => 'Failed to process like: ' . $e->getMessage()
                 ], 500);
             }
 
