@@ -103,15 +103,16 @@
             <!-- Comments Section -->
             <div class="mb-4" id="post-{{ $post->id }}-comments">
                 <!-- Add Comment Form -->
-                <div class="flex items-start gap-3 mb-4">
-                    <img src="{{ auth()->user()->profile->profileImage() }}" class="w-8 h-8 rounded-full object-cover">
+                <div class="flex items-start gap-3 mb-6">
+                    <img src="{{ auth()->user()->profile->profileImage() }}" alt="Your profile" class="w-8 h-8 rounded-full object-cover">
                     <div class="flex-1 relative">
                         <textarea
                             id="commentText-{{ $post->id }}"
                             placeholder="Add a comment..."
-                            class="w-full border rounded-md px-3 py-2 pr-16 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 resize-none overflow-hidden min-h-[40px]"
                             rows="1"
-                            required></textarea>
+                            required
+                            oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';"></textarea>
                         <div id="commentLoading-{{ $post->id }}" class="absolute right-16 top-1/2 transform -translate-y-1/2 hidden">
                             <svg class="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -134,7 +135,7 @@
                     @endphp
 
                     @foreach($comments as $comment)
-                    <div class="flex items-start gap-2 mb-3 group"
+                    <div class="flex gap-3 mb-4 group"
                         x-data="{
                              comment: {
                                  id: {{ $comment->id }},
@@ -142,27 +143,24 @@
                                  likes_count: {{ $comment->likes_count }}
                              }
                          }">
-                        <img src="{{ $comment->user->profile->profileImage() }}" class="w-7 h-7 rounded-full object-cover" alt="{{ $comment->user->username }}">
+                        <img src="{{ $comment->user->profile->profileImage() }}" class="w-8 h-8 rounded-full object-cover" alt="{{ $comment->user->username }}">
                         <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="font-semibold text-sm">{{ $comment->user->username }}</span>
-                                    <span class="text-sm">{{ $comment->comment }}</span>
+                            <div class="bg-gray-50 rounded-lg px-3 py-2 relative group">
+                                <div class="flex justify-between items-start">
+                                    <a href="/profile/{{ $comment->user->id }}" class="font-semibold text-sm hover:underline">{{ $comment->user->username }}</a>
+
+                                    @if($comment->user_id == auth()->id())
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button type="button" class="text-xs text-gray-500 hover:text-gray-700 mr-2" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->comment) }}')">
+                                            Edit
+                                        </button>
+                                        <button type="button" class="text-xs text-red-500 hover:text-red-700" onclick="deleteComment('{{ $comment->id }}')">
+                                            Delete
+                                        </button>
+                                    </div>
+                                    @endif
                                 </div>
-                                @if($comment->user_id == auth()->id())
-                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->comment) }}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button type="button" class="text-gray-500 hover:text-red-500" onclick="deleteComment('{{ $comment->id }}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                @endif
+                                <p class="text-sm mt-1">{{ $comment->comment }}</p>
                             </div>
                             <div class="flex items-center gap-2 mt-1">
                                 <button
@@ -309,34 +307,35 @@
 
                     // Create the HTML for the new comment
                     const newCommentHtml = `
-                    <div class="flex items-start gap-2 mb-3 group" data-comment-id="${data.comment.id}">
-                        <img src="${data.user.profile_image || '/storage/profile/default-avatar.png'}" class="w-7 h-7 rounded-full object-cover" alt="${data.user.username}">
+                    <div class="flex gap-3 mb-4 group" data-comment-id="${data.comment.id}">
+                        <img src="${data.user.profile_image || '/storage/profile/default-avatar.png'}" class="w-8 h-8 rounded-full object-cover" alt="${data.user.username}">
                         <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="font-semibold text-sm">${data.user.username}</span>
-                                    <span class="text-sm">${data.comment.comment}</span>
+                            <div class="bg-gray-50 rounded-lg px-3 py-2 relative group">
+                                <div class="flex justify-between items-start">
+                                    <a href="/profile/${data.user.id}" class="font-semibold text-sm hover:underline">${data.user.username}</a>
+
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button type="button" class="text-xs text-gray-500 hover:text-gray-700 mr-2" onclick="editComment('${data.comment.id}', '${data.comment.comment.replace(/'/g, "\\'")}')">
+Edit</button>
+                                        <button type="button" class="text-xs text-red-500 hover:text-red-700" onclick="deleteComment('${data.comment.id}')">Delete</button>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('${data.comment.id}', '${data.comment.comment.replace(/'/g, "\\'")}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button type="button" class="text-gray-500 hover:text-red-500" onclick="deleteComment('${data.comment.id}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                <p class="text-sm mt-1">${data.comment.comment}</p>
                             </div>
                             <div class="flex items-center gap-2 mt-1">
-                                <div class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <button
+                                    onclick="toggleLikeComment({id: ${data.comment.id}, liked: false, likes_count: 0})"
+                                    class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3 w-3"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                     </svg>
                                     <span>0</span>
-                                </div>
+                                </button>
                                 <span class="text-xs text-gray-400">just now</span>
                             </div>
                         </div>
@@ -411,6 +410,57 @@
             });
     }
 
+    // Function to toggle like on a comment
+    function toggleLikeComment(comment) {
+        fetch(`/comments/${comment.id}/like`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin' // Add this to ensure cookies are sent
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Update the UI
+                    const commentElement = document.querySelector(`[data-comment-id="${comment.id}"]`);
+                    if (commentElement) {
+                        // Update the like button color
+                        const likeButton = commentElement.querySelector('.flex-1 > div:last-child > button');
+                        if (likeButton) {
+                            if (data.liked) {
+                                likeButton.classList.add('text-red-500');
+                                likeButton.classList.add('hover:text-red-700');
+                                likeButton.classList.remove('text-gray-500');
+                                const svg = likeButton.querySelector('svg');
+                                if (svg) svg.setAttribute('fill', 'currentColor');
+                            } else {
+                                likeButton.classList.remove('text-red-500');
+                                likeButton.classList.remove('hover:text-red-700');
+                                likeButton.classList.add('text-gray-500');
+                                const svg = likeButton.querySelector('svg');
+                                if (svg) svg.setAttribute('fill', 'none');
+                            }
+
+                            // Update the count
+                            const countSpan = likeButton.querySelector('span');
+                            if (countSpan) countSpan.textContent = data.count;
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling comment like:', error);
+            });
+    }
+
     // Initialize the edit form to handle submission via AJAX
     document.getElementById('editCommentForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -446,7 +496,7 @@
 
                     if (commentElement) {
                         // Update the comment text
-                        const commentTextElement = commentElement.querySelector('.flex-1 > div > div > span:nth-child(2)');
+                        const commentTextElement = commentElement.querySelector('.flex-1 > div > p');
                         if (commentTextElement) {
                             commentTextElement.textContent = commentText;
                         }
