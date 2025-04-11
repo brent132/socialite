@@ -38,6 +38,7 @@ Route::get('/profile/{user}', [ProfilesController::class, 'index'])->name('profi
 Route::get('/profile/{user}/edit', [ProfilesController::class, 'edit'])->name('profile.edit');
 Route::get('/profile/{user}/following', [FollowController::class, 'followingPage'])->name('following.page');
 
+Route::patch('/profile/{user}', [ProfilesController::class, 'update'])->name('profile.update');
 Route::patch('/profile/{user}/picture', [ProfilesController::class, 'updatePicture'])->name('profile.picture.update');
 Route::patch('/profile/{user}/bio', [ProfilesController::class, 'updateBio'])->name('profile.update.bio');
 
