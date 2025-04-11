@@ -133,6 +133,7 @@
                             <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">No messages yet. Start a conversation!</span>
                         </div>`;
                     } else {
+                        // Reverse not needed anymore since we're ordering correctly from the server
                         data.messages.forEach(message => {
                             const messageDate = formatDate(message.created_at);
                             
@@ -155,17 +156,17 @@
                     }
                     
                     if (loadMore) {
-                        messagesContent.insertAdjacentHTML('afterbegin', html);
+                        messagesContent.insertAdjacentHTML('beforeend', html); // Changed from 'afterbegin' to 'beforeend'
+                        if (data.messages.length > 0) {
+                            const firstNewMessage = messagesContent.lastElementChild;
+                            firstNewMessage.scrollIntoView({ behavior: 'smooth' });
+                        }
                     } else {
                         messagesContent.innerHTML = html;
-                    }
-                    
-                    // Show/hide load more button based on if there are more messages
-                    loadMoreButton.style.display = data.has_more ? 'block' : 'none';
-                    
-                    if (!loadMore) {
                         messagesContainer.scrollTop = messagesContainer.scrollHeight;
                     }
+                    
+                    loadMoreButton.style.display = data.has_more ? 'block' : 'none';
                 })
                 .catch(error => {
                     console.error('Error loading messages:', error);
@@ -248,5 +249,6 @@
     });
 </script>
 @endsection
+
 
 

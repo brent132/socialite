@@ -62,8 +62,8 @@ class ChatController extends Controller
                             ->where('receiver_id', auth()->id());
                   });
         })
-        ->orderBy('created_at', 'desc')
-        ->paginate(20); // 20 messages per page
+        ->orderBy('created_at', 'asc')  // Changed from 'desc' to 'asc'
+        ->paginate(20);
 
         return response()->json([
             'messages' => $messages->items(),
@@ -107,5 +107,6 @@ class ChatController extends Controller
         }
     }
 }
+
 
 
