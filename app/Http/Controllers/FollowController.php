@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\User;
@@ -54,8 +54,11 @@ class FollowController extends Controller
 
     private function clearUserCache($userId)
     {
+        // Clear all related caches for the user
         Cache::forget('count.followers.' . $userId);
         Cache::forget('count.following.' . $userId);
+        Cache::forget('following.ids.' . $userId);
+        Cache::forget('count.posts.' . $userId);
     }
 
     public function followingPage(User $user)

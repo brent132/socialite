@@ -11,32 +11,113 @@ use App\Models\User;
 
 class ProfilesController extends Controller
 {
-    public function index(\App\Models\User $user)
+    public function index(User $user)
     {
-        $user->load(['posts' => function($query) {
-            $query->latest(); // This will order by created_at DESC
-        }, 'posts.likes', 'posts.comments', 'followers', 'following']);
+        // Eager load relationships with pagination for posts to improve performance
+        $user->load([
+            'followers',
+            'following'
+        ]);
 
-        $postCount = Cache::remember('count.posts.' . $user->id, now()->addSeconds(5), function () use ($user) {
-            return $user->posts->count();
+        // Get paginated posts with eager loading
+        $posts = $user->posts()
+            ->with(['likes', 'comments' => function ($query) {
+                $query->latest()->limit(3)->with('user.profile');
+            }])
+            ->latest()
+            ->paginate(9); // Show 9 posts per page in a 3x3 grid
+
+        // Cache counts for better performance
+        $postCount = Cache::remember('count.posts.' . $user->id, now()->addMinutes(10), function () use ($user) {
+            return $user->posts()->count();
         });
 
-        $followerCount = Cache::remember('count.followers.' . $user->id, now()->addSeconds(5), function () use ($user) {
+        $followerCount = Cache::remember('count.followers.' . $user->id, now()->addMinutes(10), function () use ($user) {
             return $user->followers->count();
         });
 
-        $followingCount = Cache::remember('count.following.' . $user->id, now()->addSeconds(5), function () use ($user) {
+        $followingCount = Cache::remember('count.following.' . $user->id, now()->addMinutes(10), function () use ($user) {
             return $user->following->count();
         });
 
-        return view('profiles.index', compact('user', 'postCount', 'followerCount', 'followingCount'));
+        return view('profiles.index', compact('user', 'posts', 'postCount', 'followerCount', 'followingCount'));
     }
 
-    public function edit(\App\Models\User $user)
+    public function edit(User $user)
     {
         $this->authorize('update', $user->profile);
 
         return view('profiles.edit', compact('user'));
+    }
+
+    /**
+     * Process profile image upload
+     */
+    private function processProfileImage(User $user, $file)
+    {
+        // Remove old image if exists
+        if ($user->profile->image) {
+            Storage::disk('public')->delete($user->profile->image);
+        }
+
+        $imagePath = $file->store('profile', 'public');
+
+        try {
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read(public_path("storage/{$imagePath}"));
+            $image->scale(width: 400, height: 400);
+            $image->save();
+
+            $user->profile->update([
+                'image' => $imagePath
+            ]);
+
+            return [
+                'success' => true,
+                'path' => $imagePath
+            ];
+        } catch (\Exception $exception) {
+            Storage::disk('public')->delete($imagePath);
+            return [
+                'success' => false,
+                'message' => 'Failed to process profile image: ' . $exception->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Process background image upload
+     */
+    private function processBackgroundImage(User $user, $file)
+    {
+        // Remove old background if exists
+        if ($user->profile->background) {
+            Storage::disk('public')->delete($user->profile->background);
+        }
+
+        $backgroundPath = $file->store('profile/backgrounds', 'public');
+
+        try {
+            $manager = new ImageManager(new Driver());
+            $background = $manager->read(public_path("storage/{$backgroundPath}"));
+            $background->scale(width: 1920, height: 1080);
+            $background->save();
+
+            $user->profile->update([
+                'background' => $backgroundPath
+            ]);
+
+            return [
+                'success' => true,
+                'path' => $backgroundPath
+            ];
+        } catch (\Exception $exception) {
+            Storage::disk('public')->delete($backgroundPath);
+            return [
+                'success' => false,
+                'message' => 'Failed to process background image: ' . $exception->getMessage()
+            ];
+        }
     }
 
     public function updatePicture(User $user)
@@ -56,7 +137,6 @@ class ProfilesController extends Controller
 
         $updated = false;
         $responseMessage = 'No changes made';
-        $imagePath = null;
 
         // Handle profile image upload
         if (request()->hasFile('image')) {
@@ -64,32 +144,17 @@ class ProfilesController extends Controller
                 'image' => 'required|image|max:5120', // 5MB max
             ]);
 
-            // Remove old image if exists and it's not the default
-            if ($user->profile->image) {
-                Storage::disk('public')->delete($user->profile->image);
-            }
+            $result = $this->processProfileImage($user, request('image'));
 
-            $imagePath = request('image')->store('profile', 'public');
-
-            try {
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read(public_path("storage/{$imagePath}"));
-                $image->scale(width: 400, height: 400);
-                $image->save();
-
-                $user->profile->update([
-                    'image' => $imagePath
-                ]);
-
-                $updated = true;
-                $responseMessage = 'Profile picture updated successfully';
-            } catch (\Exception $exception) {
-                Storage::disk('public')->delete($imagePath);
+            if (!$result['success']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to process profile image: ' . $exception->getMessage()
+                    'message' => $result['message']
                 ], 500);
             }
+
+            $updated = true;
+            $responseMessage = 'Profile picture updated successfully';
         }
 
         // Handle background image upload
@@ -98,32 +163,17 @@ class ProfilesController extends Controller
                 'background' => 'required|image|max:10240', // 10MB max
             ]);
 
-            // Remove old background if exists
-            if ($user->profile->background) {
-                Storage::disk('public')->delete($user->profile->background);
-            }
+            $result = $this->processBackgroundImage($user, request('background'));
 
-            $backgroundPath = request('background')->store('profile/backgrounds', 'public');
-
-            try {
-                $manager = new ImageManager(new Driver());
-                $background = $manager->read(public_path("storage/{$backgroundPath}"));
-                $background->scale(width: 1920, height: 1080);
-                $background->save();
-
-                $user->profile->update([
-                    'background' => $backgroundPath
-                ]);
-
-                $updated = true;
-                $responseMessage = $imagePath ? 'Profile images updated successfully' : 'Background updated successfully';
-            } catch (\Exception $exception) {
-                Storage::disk('public')->delete($backgroundPath);
+            if (!$result['success']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to process background image: ' . $exception->getMessage()
+                    'message' => $result['message']
                 ], 500);
             }
+
+            $updated = true;
+            $responseMessage = $updated ? 'Profile images updated successfully' : 'Background updated successfully';
         }
 
         if ($updated) {
@@ -180,32 +230,17 @@ class ProfilesController extends Controller
                 'image' => 'required|image|max:5120', // 5MB max
             ]);
 
-            // Remove old image if exists and it's not the default
-            if ($user->profile->image) {
-                Storage::disk('public')->delete($user->profile->image);
-            }
+            $result = $this->processProfileImage($user, request('image'));
 
-            $imagePath = request('image')->store('profile', 'public');
-
-            try {
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read(public_path("storage/{$imagePath}"));
-                $image->scale(width: 400, height: 400);
-                $image->save();
-
-                $user->profile->update([
-                    'image' => $imagePath
-                ]);
-
-                $updated = true;
-                $responseMessage = 'Profile updated successfully';
-            } catch (\Exception $exception) {
-                Storage::disk('public')->delete($imagePath);
+            if (!$result['success']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to process profile image: ' . $exception->getMessage()
+                    'message' => $result['message']
                 ], 500);
             }
+
+            $updated = true;
+            $responseMessage = 'Profile updated successfully';
         }
 
         // Handle background image upload
@@ -214,32 +249,17 @@ class ProfilesController extends Controller
                 'background' => 'required|image|max:10240', // 10MB max
             ]);
 
-            // Remove old background if exists
-            if ($user->profile->background) {
-                Storage::disk('public')->delete($user->profile->background);
-            }
+            $result = $this->processBackgroundImage($user, request('background'));
 
-            $backgroundPath = request('background')->store('profile/backgrounds', 'public');
-
-            try {
-                $manager = new ImageManager(new Driver());
-                $background = $manager->read(public_path("storage/{$backgroundPath}"));
-                $background->scale(width: 1920, height: 1080);
-                $background->save();
-
-                $user->profile->update([
-                    'background' => $backgroundPath
-                ]);
-
-                $updated = true;
-                $responseMessage = 'Profile updated successfully';
-            } catch (\Exception $exception) {
-                Storage::disk('public')->delete($backgroundPath);
+            if (!$result['success']) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to process background image: ' . $exception->getMessage()
+                    'message' => $result['message']
                 ], 500);
             }
+
+            $updated = true;
+            $responseMessage = 'Profile updated successfully';
         }
 
         if ($updated) {
@@ -255,4 +275,3 @@ class ProfilesController extends Controller
         ], 400);
     }
 }
-

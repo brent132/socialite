@@ -22,14 +22,13 @@ php artisan storage:link
 
 ### Clearing Cache
 
-If you encounter any issues after making changes, try clearing the cache:
+If you encounter any issues after making changes, try clearing all caches using the custom command:
 
 ```bash
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+php artisan cache:clear-all
 ```
+
+This will clear application, config, route, view caches, and compiled files.
 
 ### Intervention Image
 
@@ -68,3 +67,34 @@ In another terminal:
 ```bash
 php artisan serve
 ```
+
+## Production Optimization
+
+Before deploying to production, optimize your application:
+
+```bash
+# Optimize Composer's autoloader
+composer install --optimize-autoloader --no-dev
+
+# Optimize configuration loading
+php artisan config:cache
+
+# Optimize route loading
+php artisan route:cache
+
+# Compile all Blade templates
+php artisan view:cache
+
+# Build frontend assets for production
+npm run build
+```
+
+### Database Optimization
+
+Make sure to run the performance indexes migration:
+
+```bash
+php artisan migrate
+```
+
+This will add indexes to improve database query performance.

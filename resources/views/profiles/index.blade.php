@@ -138,9 +138,9 @@
     <div class="mt-8">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 px-4 md:px-0 mb-4">Posts</h2>
 
-        @if($user->posts && $user->posts->count() > 0)
+        @if($posts && $posts->count() > 0)
         <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-3 md:gap-6">
-            @foreach($user->posts->sortByDesc('created_at') as $post)
+            @foreach($posts as $post)
             <div class="relative group aspect-square cursor-pointer">
                 <a href="/p/{{ $post->id }}" class="block w-full h-full">
                     <!-- Image -->
@@ -170,6 +170,11 @@
                 </div>
             </div>
             @endforeach
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-8 flex justify-center">
+            {{ $posts->links() }}
         </div>
         @else
         <div class="text-center py-8 px-4">

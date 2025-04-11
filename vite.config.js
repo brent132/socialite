@@ -8,4 +8,22 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        // Optimize build for production
+        minify: "terser",
+        terserOptions: {
+            compress: {
+                drop_console: true,
+                drop_debugger: true,
+            },
+        },
+        // Split chunks for better caching
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ["alpinejs", "axios"],
+                },
+            },
+        },
+    },
 });

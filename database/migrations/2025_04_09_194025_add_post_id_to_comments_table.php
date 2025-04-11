@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+
+// This migration is redundant as the columns are added in 2025_04_09_194510_add_missing_columns_to_comments_table.php
+// Keeping this file with empty methods to maintain migration history
 
 return new class extends Migration
 {
@@ -11,9 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('comments', function (Blueprint $table) {
-            //
-        });
+        // No operations needed - columns added in another migration
     }
 
     /**
@@ -21,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('comments', function (Blueprint $table) {
-            //
-        });
+        // No operations needed - columns handled in another migration
     }
 };
