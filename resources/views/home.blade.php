@@ -266,18 +266,18 @@
 <!-- Edit Comment Modal -->
 <div id="editCommentModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
     <div class="flex items-center justify-center h-full w-full">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
-            <h3 class="text-lg font-semibold mb-4">Edit Comment</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 relative">
+            <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">Edit Comment</h3>
             <form id="editCommentForm" method="POST">
                 @csrf
                 @method('PATCH')
                 <textarea
                     id="editCommentText"
                     name="comment"
-                    class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
                     rows="3"></textarea>
                 <div class="flex justify-end mt-4 gap-2">
-                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">

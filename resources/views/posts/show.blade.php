@@ -127,11 +127,11 @@
 
                 <!-- Edit Comment Modal -->
                 <div x-show="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div class="bg-white rounded-lg p-6 w-full max-w-md">
-                        <h3 class="text-lg font-semibold mb-4">Edit Comment</h3>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+                        <h3 class="text-lg font-semibold mb-4 dark:text-gray-200">Edit Comment</h3>
                         <textarea
                             x-model="editCommentText"
-                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 resize-none h-24"></textarea>
+                            class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 dark:focus:border-blue-500 resize-none h-24"></textarea>
                         <div class="flex justify-end gap-2 mt-4">
                             <button
                                 @click="showEditModal = false"
@@ -285,44 +285,44 @@
                 this.isSubmitting = true;
 
                 fetch(`/p/${this.postId}/comments`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        comment: this.newComment
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            comment: this.newComment
+                        })
                     })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Add the new comment with all required properties
-                        this.comments.unshift({
-                            id: data.comment.id,
-                            comment: data.comment.comment,
-                            user: data.user,
-                            user_id: data.user.id,
-                            liked: false,
-                            likes_count: 0,
-                            created_at: new Date().toISOString()
-                        });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Add the new comment with all required properties
+                            this.comments.unshift({
+                                id: data.comment.id,
+                                comment: data.comment.comment,
+                                user: data.user,
+                                user_id: data.user.id,
+                                liked: false,
+                                likes_count: 0,
+                                created_at: new Date().toISOString()
+                            });
 
-                        // Reset textarea height and clear input
-                        this.newComment = '';
-                        this.$nextTick(() => {
-                            if (this.$refs.commentTextarea) {
-                                this.$refs.commentTextarea.style.height = '40px';
-                            }
-                        });
-                    }
-                    this.isSubmitting = false;
-                })
-                .catch(error => {
-                    console.error('Error adding comment:', error);
-                    this.isSubmitting = false;
-                });
+                            // Reset textarea height and clear input
+                            this.newComment = '';
+                            this.$nextTick(() => {
+                                if (this.$refs.commentTextarea) {
+                                    this.$refs.commentTextarea.style.height = '40px';
+                                }
+                            });
+                        }
+                        this.isSubmitting = false;
+                    })
+                    .catch(error => {
+                        console.error('Error adding comment:', error);
+                        this.isSubmitting = false;
+                    });
             },
 
             editComment(comment) {
@@ -452,4 +452,3 @@
     });
 </script>
 @endsection
-
