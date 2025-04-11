@@ -1,63 +1,29 @@
+/* Poppins font family */
 @font-face {
     font-family: 'Poppins';
     src: url('/public/fonts/Poppins-Thin.woff') format('woff');
-    font-weight: 100; /* Thin */
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Poppins';
-    src: url('/public/fonts/Poppins-ExtraLight.woff') format('woff');
-    font-weight: 200; /* Extra Light */
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Poppins';
-    src: url('/public/fonts/Poppins-Light.woff') format('woff');
-    font-weight: 300; /* Light */
+    font-weight: 100;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Poppins';
     src: url('/public/fonts/Poppins-Regular.woff') format('woff');
-    font-weight: 400; /* Regular */
+    font-weight: 400;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Poppins';
     src: url('/public/fonts/Poppins-Medium.woff') format('woff');
-    font-weight: 500; /* Medium */
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Poppins';
-    src: url('/public/fonts/Poppins-SemiBold.woff') format('woff');
-    font-weight: 600; /* Semi-Bold */
+    font-weight: 500;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Poppins';
     src: url('/public/fonts/Poppins-Bold.woff') format('woff');
-    font-weight: 700; /* Bold */
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Poppins';
-    src: url('/public/fonts/Poppins-ExtraBold.woff') format('woff');
-    font-weight: 800; /* Extra Bold */
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Poppins';
-    src: url('/public/fonts/Poppins-Black.woff') format('woff');
-    font-weight: 900; /* Black */
+    font-weight: 700;
     font-style: normal;
 }
 
@@ -66,14 +32,7 @@
 @tailwind utilities;
 
 @layer utilities {
-    .bg-primary {
-        background-color: #42A3FF;
-    }
-    .text-primary {
-        color: #42A3FF;
-    }
-
-    /* Add gradient backgrounds */
+    /* Gradient backgrounds */
     .bg-gradient-profile {
         @apply bg-gradient-to-r from-blue-400 to-purple-500;
     }
@@ -87,7 +46,7 @@
         @apply bg-gray-800 border-gray-700;
     }
 
-    /* Your existing utility classes */
+    /* Animation and hover utilities */
     .hover-transform {
         @apply transition-transform duration-300 hover:scale-105;
     }
@@ -95,9 +54,15 @@
     .card-hover {
         @apply transition-all duration-300 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600;
     }
+
+    /* Aspect ratio utility */
+    .aspect-square {
+        aspect-ratio: 1 / 1;
+    }
 }
 
 @layer components {
+    /* Profile statistics */
     .profile-stat {
         @apply flex flex-col items-center;
     }
@@ -110,6 +75,7 @@
         @apply text-sm text-gray-600;
     }
 
+    /* Post grid components */
     .post-grid-item {
         @apply relative overflow-hidden rounded-xl shadow-sm transition-all duration-300 hover:shadow-md;
     }
@@ -120,12 +86,6 @@
 
     .post-grid-overlay {
         @apply absolute inset-0 bg-black opacity-0 transition-opacity duration-300;
-    }
-}
-
-@layer utilities {
-    .aspect-square {
-        aspect-ratio: 1 / 1;
     }
 }
 
