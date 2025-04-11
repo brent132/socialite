@@ -181,9 +181,8 @@
             originalImageUrl: '{{ $user->profile->profileImage() }}',
             backgroundUrl: '{{ $user->profile->backgroundImage() }}',
             originalBackgroundUrl: '{{ $user->profile->backgroundImage() }}',
-            bio: '{{ old('
-            description ') ?? $user->profile->description }}',
-            originalBio: '{{ $user->profile->description }}',
+            bio: "{{ old('description') ?? $user->profile->description }}",
+            originalBio: "{{ $user->profile->description }}",
             bioLength: {
                 {
                     strlen(old('description') ?? $user - > profile - > description)
