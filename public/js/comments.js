@@ -13,6 +13,10 @@ function loadMoreComments(postId) {
     const currentComments =
         commentsList.querySelectorAll(".comment-item").length;
 
+    // Calculate the page number based on current comments count
+    // Assuming 5 comments per page
+    const page = Math.floor(currentComments / 5) + 1;
+
     // Show loading state
     loadMoreBtn.innerHTML = `<svg class="animate-spin h-4 w-4 text-gray-500 inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -23,10 +27,7 @@ function loadMoreComments(postId) {
     // Get CSRF token
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-    // Get the current page from the number of comments
-    const page = Math.floor(currentComments / 5) + 1;
-
-    // Fetch more comments
+    // Fetch more comments with the calculated page number
     fetch(`/p/${postId}/comments?page=${page}&limit=5`, {
         headers: {
             "X-CSRF-TOKEN": csrfToken,
@@ -35,18 +36,14 @@ function loadMoreComments(postId) {
     })
         .then((response) => response.json())
         .then((data) => {
-            // Check if we have data in the response
-            // The API returns data in 'data' property when using Laravel's paginate
-            const comments = data.data || [];
-
-            if (comments.length > 0) {
-                comments.forEach((comment) => {
+            if (data.success && data.data && data.data.length > 0) {
+                data.data.forEach((comment) => {
                     // Format the timestamp
                     const timeAgo = formatTimeAgo(new Date(comment.created_at));
 
-                    // Create comment HTML
+                    // Create comment HTML - ensure no border classes are added
                     const commentHtml = `
-                    <div class="comment-item group flex space-x-3 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0" data-comment-id="${
+                    <div class="comment-item group flex space-x-3 py-3" data-comment-id="${
                         comment.id
                     }">
                         <img src="${
@@ -68,32 +65,34 @@ function loadMoreComments(postId) {
                                 ${
                                     comment.user_id === window.currentUserId
                                         ? `
-                                <div class="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                    <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('${
-                                        comment.id
-                                    }', '${comment.comment.replace(
+                                    <div class="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                        <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('${
+                                            comment.id
+                                        }', '${comment.comment.replace(
                                               /'/g,
                                               "\\'"
                                           )}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button type="button" class="text-gray-500 hover:text-red-500" onclick="deleteComment('${
-                                        comment.id
-                                    }')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" class="text-gray-500 hover:text-red-500" onclick="deleteComment('${
+                                            comment.id
+                                        }')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 `
                                         : ""
                                 }
                             </div>
                             <div class="flex items-center gap-2 mt-1" x-data="commentLikeSystem(${
                                 comment.id
-                            }, ${comment.liked}, ${comment.likes_count})">
+                            }, ${comment.liked || false}, ${
+                        comment.likes_count || 0
+                    })">
                                 <button
                                     @click="toggleLike"
                                     class="text-xs hover:text-gray-700 flex items-center gap-1"
@@ -116,10 +115,15 @@ function loadMoreComments(postId) {
 
                     // Add the comment to the list
                     commentsList.insertAdjacentHTML("beforeend", commentHtml);
+
+                    // Initialize Alpine.js components on the new comment
+                    if (window.Alpine) {
+                        window.Alpine.initTree(commentsList.lastElementChild);
+                    }
                 });
 
                 // Hide the load more button if there are no more comments
-                if (comments.length < 5 || !data.next_page_url) {
+                if (data.data.length < 5 || !data.next_page_url) {
                     loadMoreBtn.style.display = "none";
                 } else {
                     // Reset the button
@@ -238,7 +242,7 @@ function submitComment(postId) {
 
                 // Create the HTML for the new comment
                 const newCommentHtml = `
-                <div class="comment-item group flex space-x-3 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0" data-comment-id="${
+                <div class="comment-item group flex space-x-3 py-3" data-comment-id="${
                     data.comment.id
                 }">
                     <img src="${
@@ -314,11 +318,6 @@ function submitComment(postId) {
                     commentsList.appendChild(newComment);
                 }
 
-                // Initialize Alpine.js components on the new comment
-                if (window.Alpine) {
-                    window.Alpine.initTree(newComment);
-                }
-
                 // Update the comment count
                 const commentCountElement = document.getElementById(
                     `post-${postId}-comment-count`
@@ -327,6 +326,11 @@ function submitComment(postId) {
                     const currentCount =
                         parseInt(commentCountElement.textContent) || 0;
                     commentCountElement.textContent = currentCount + 1;
+                }
+
+                // Initialize Alpine.js components on the new comment
+                if (window.Alpine) {
+                    window.Alpine.initTree(newComment);
                 }
             }
 
@@ -394,15 +398,16 @@ function deleteComment(commentId) {
                     `[data-comment-id="${commentId}"]`
                 );
                 if (commentElement) {
-                    // Find the post ID from the comment's parent elements
-                    const commentsSection = commentElement.closest(
+                    // Find the post ID from the closest post-comments container
+                    const commentsContainer = commentElement.closest(
                         '[id^="post-"][id$="-comments"]'
                     );
-                    if (commentsSection) {
-                        const postId =
-                            commentsSection.id.match(/post-(\d+)-comments/)[1];
+                    const postId = commentsContainer
+                        ? commentsContainer.id.match(/post-(\d+)-comments/)[1]
+                        : null;
 
-                        // Update the comment count
+                    // Update the comment count if we found the post ID
+                    if (postId) {
                         const commentCountElement = document.getElementById(
                             `post-${postId}-comment-count`
                         );
@@ -416,7 +421,7 @@ function deleteComment(commentId) {
                         }
                     }
 
-                    // Remove the comment element
+                    // Remove the comment
                     commentElement.remove();
                 }
             }
@@ -476,20 +481,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (commentTextElement) {
                                 commentTextElement.textContent = commentText;
                             }
-
-                            // Update the edit button onclick attribute
-                            const editButton = commentElement.querySelector(
-                                'button[onclick^="editComment"]'
-                            );
-                            if (editButton) {
-                                editButton.setAttribute(
-                                    "onclick",
-                                    `editComment('${commentId}', '${commentText.replace(
-                                        /'/g,
-                                        "\\'"
-                                    )}')`
-                                );
-                            }
                         }
 
                         // Close the modal
@@ -514,4 +505,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Store the current user ID for use in the loadMoreComments function
-// This will be set in the blade template
+window.currentUserId = null;

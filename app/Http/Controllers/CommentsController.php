@@ -143,10 +143,11 @@ class CommentsController extends Controller
     {
         try {
             $limit = $request->input('limit', 10);
+            $page = $request->input('page', 1);
 
             $comments = $post->comments()
                 ->with('user.profile')
-                ->latest()
+                ->latest() // Ensure comments are ordered by latest
                 ->paginate($limit);
 
             // Add liked status for the authenticated user and profile image
@@ -166,6 +167,7 @@ class CommentsController extends Controller
 
             // Add total count for frontend pagination
             $response = $comments->toArray();
+            $response['success'] = true;
             $response['total'] = $post->comments()->count();
 
             return response()->json($response);

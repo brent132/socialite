@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
-    x-data="{ 
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    x-data="{
         darkMode: localStorage.getItem('darkMode') === 'true',
-        mobileSearch: false 
-    }" 
-    x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))" 
+        mobileSearch: false
+    }"
+    x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))"
     :class="{ 'dark': darkMode }">
 
 <head>
@@ -25,6 +25,11 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+        }
+
+        /* Fix for comment borders */
+        .comment-item {
+            border: none !important;
         }
 
         .glass-effect {
@@ -267,18 +272,18 @@
 </html>
 
 <!-- Mobile Search Overlay -->
-<div x-show="mobileSearch" 
-     x-transition:enter="transition ease-out duration-200"
-     x-transition:enter-start="opacity-0 transform -translate-y-2"
-     x-transition:enter-end="opacity-100 transform translate-y-0"
-     x-transition:leave="transition ease-in duration-150"
-     x-transition:leave-start="opacity-100 transform translate-y-0"
-     x-transition:leave-end="opacity-0 transform -translate-y-2"
-     class="absolute left-0 right-0 top-full mt-2 px-4 pb-4">
+<div x-show="mobileSearch"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 transform -translate-y-2"
+    x-transition:enter-end="opacity-100 transform translate-y-0"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100 transform translate-y-0"
+    x-transition:leave-end="opacity-0 transform -translate-y-2"
+    class="absolute left-0 right-0 top-full mt-2 px-4 pb-4">
     <div class="relative">
-        <input type="text" 
-               placeholder="Search profiles..." 
-               class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent">
+        <input type="text"
+            placeholder="Search profiles..."
+            class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent">
         <button @click="mobileSearch = false" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -286,5 +291,3 @@
         </button>
     </div>
 </div>
-
-

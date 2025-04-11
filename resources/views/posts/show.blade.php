@@ -134,7 +134,7 @@
                 <!-- Comments List -->
                 <div class="comments-list">
                     @foreach($post->comments->take(5) as $comment)
-                    <div class="comment-item group flex space-x-3 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0" data-comment-id="{{ $comment->id }}">
+                    <div class="comment-item group flex space-x-3 py-3" data-comment-id="{{ $comment->id }}">
                         <img src="{{ $comment->user->profile->profileImage() }}" class="w-7 h-7 rounded-full object-cover" alt="{{ $comment->user->username }}">
                         <div class="flex-1">
                             <div class="flex justify-between items-start">
@@ -251,21 +251,21 @@
             
             toggleLike() {
                 fetch(`/p/${postId}/like`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.liked = data.liked;
-                            this.likeCount = data.count;
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.liked = data.liked;
+                        this.likeCount = data.count;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
             }
         }));
 
@@ -275,25 +275,25 @@
             
             toggleLike() {
                 fetch(`/comments/${commentId}/like`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'same-origin'
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            this.liked = data.liked;
-                            this.likesCount = data.count;
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        this.liked = data.liked;
+                        this.likesCount = data.count;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
             }
         }));
     });
@@ -304,3 +304,5 @@
 </script>
 <script src="/js/comments.js"></script>
 @endsection
+
+

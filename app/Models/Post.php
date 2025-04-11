@@ -20,7 +20,7 @@ class Post extends Model
 
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->latest();
     }
 
     public function likedBy(User $user)
@@ -28,10 +28,7 @@ class Post extends Model
         if (!$user) {
             return false;
         }
-        
+
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 }
-
-
-
