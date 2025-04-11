@@ -13,7 +13,9 @@ class ProfilesController extends Controller
 {
     public function index(\App\Models\User $user)
     {
-        $user->load(['posts.likes', 'posts.comments', 'followers', 'following']);
+        $user->load(['posts' => function($query) {
+            $query->latest(); // This will order by created_at DESC
+        }, 'posts.likes', 'posts.comments', 'followers', 'following']);
 
         $postCount = Cache::remember('count.posts.' . $user->id, now()->addSeconds(5), function () use ($user) {
             return $user->posts->count();
@@ -253,3 +255,4 @@ class ProfilesController extends Controller
         ], 400);
     }
 }
+

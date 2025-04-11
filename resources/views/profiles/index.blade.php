@@ -161,7 +161,7 @@
 
         @if($user->posts && $user->posts->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($user->posts as $post)
+            @foreach($user->posts->sortByDesc('created_at') as $post)
             <div class="relative group" x-data="{
                         likeCount: {{ $post->likes ? $post->likes->count() : 0 }},
                         isLiked: {{ $post->likes && $post->likes->where('user_id', auth()->id())->count() > 0 ? 'true' : 'false' }},

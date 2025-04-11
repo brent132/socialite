@@ -16,84 +16,63 @@
         <div
             x-show="notification.show"
             x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-start="opacity-0 transform translate-y-2"
             x-transition:enter-end="opacity-100 transform translate-y-0"
             x-transition:leave="transition ease-in duration-300"
             x-transition:leave-start="opacity-100 transform translate-y-0"
-            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            x-transition:leave-end="opacity-0 transform translate-y-2"
             :class="notification.type === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'"
-            class="p-4 rounded-lg border mb-4 shadow-sm">
-            <p x-text="notification.message" class="font-medium"></p>
+            class="fixed bottom-20 left-4 z-50 p-4 rounded-lg shadow-lg border">
+            <div class="flex items-center">
+                <svg x-show="notification.type === 'success'" class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <svg x-show="notification.type === 'error'" class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <span x-text="notification.message"></span>
+            </div>
         </div>
 
         <!-- Image Upload -->
         <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
             <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100 text-center">Upload Photo</h2>
-
-            <div class="flex flex-col items-center">
-                <div
-                    @click="$refs.fileInput.click()"
-                    class="cursor-pointer w-full h-96 rounded-lg transition-all duration-300"
-                    :class="imageUrl ? 'border-none' : 'border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-700'">
-                    <div class="h-full w-full flex items-center justify-center">
-                        <!-- Preview Image -->
-                        <template x-if="imageUrl">
-                            <img :src="imageUrl" class="w-full h-full rounded-lg object-contain">
-                        </template>
-
-                        <!-- Upload Icon and Text -->
-                        <template x-if="!imageUrl">
-                            <div class="text-center p-6">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <p class="mt-4 text-gray-600 dark:text-gray-300 font-medium">Click to upload a photo</p>
-                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">JPG, PNG, GIF up to 10MB</p>
-                            </div>
-                        </template>
-                    </div>
+            
+            <div class="relative aspect-square w-full bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+                <input type="file" 
+                    @change="handleImageChange" 
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                    accept="image/*">
+                
+                <div class="absolute inset-0 flex flex-col items-center justify-center" x-show="!imageUrl">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">Click to upload an image</p>
                 </div>
 
-                <input
-                    type="file"
-                    class="hidden"
-                    x-ref="fileInput"
-                    @change="handleImageChange"
-                    accept="image/*"
-                    name="image">
-
-                @error('image')
-                <p class="text-red-500 text-sm mt-4">{{ $message }}</p>
-                @enderror
+                <img x-show="imageUrl" :src="imageUrl" class="absolute inset-0 w-full h-full object-cover rounded-lg">
             </div>
-        </div>
 
-        <!-- Caption Form -->
-        <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
-            <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Write a Caption</h2>
-
-            <div class="relative">
+            <!-- Caption Input -->
+            <div class="mt-6">
+                <label for="caption" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Caption</label>
                 <textarea
                     id="caption"
-                    placeholder="What's on your mind?"
-                    maxlength="2200"
-                    class="bg-gray-50 dark:bg-gray-700 dark:text-gray-200 rounded-lg w-full py-4 px-5 leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/40 focus:bg-white dark:focus:bg-gray-600 resize-none h-40 pr-16 transition-all duration-300"
-                    name="caption"
                     x-model="caption"
-                    @input="handleCaptionChange"></textarea>
-
-                <div class="absolute bottom-4 right-4 text-sm font-medium" :class="captionLength > 2000 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'">
-                    <span x-text="captionLength + '/2200'"></span>
+                    @input="handleCaptionChange"
+                    placeholder="Write a caption..."
+                    class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors duration-200"
+                    rows="3"
+                ></textarea>
+                <div class="mt-2 flex justify-end">
+                    <span x-text="captionLength" class="text-sm text-gray-500 dark:text-gray-400"></span>
                 </div>
             </div>
-
-            @error('caption')
-            <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
-            @enderror
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex justify-end gap-4 mt-8" x-show="hasChanges">
+        <div class="flex justify-end gap-4" x-show="hasChanges">
             <a
                 href="/profile/{{ auth()->user()->id }}"
                 class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
@@ -103,12 +82,12 @@
             </a>
             <button
                 @click="submitPost"
-                class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg"
                 :disabled="!isValid || isSubmitting"
                 :class="{'opacity-50 cursor-not-allowed': !isValid || isSubmitting}">
                 <span x-show="!isSubmitting">Share Post</span>
                 <span x-show="isSubmitting" class="flex items-center">
-                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -206,3 +185,4 @@
     }
 </script>
 @endsection
+
