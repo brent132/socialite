@@ -2,67 +2,104 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Message;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
-    public function followingList()
+    /**
+     * Show the list of users to chat with
+     */
+    public function index()
     {
-        $authUserId = Auth::id();
+        // Get users the current user is following
         $following = Auth::user()->following;
-
-        // Get the last message for each user
-        $following = $following->map(function ($user) use ($authUserId) {
-            // Find the last message between the current user and this user
-            $lastMessage = Message::where(function ($query) use ($user, $authUserId) {
-                $query->where('sender_id', $authUserId)->where('receiver_id', $user->id);
-            })->orWhere(function ($query) use ($user, $authUserId) {
-                $query->where('sender_id', $user->id)->where('receiver_id', $authUserId);
-            })->latest()->first();
-
-            // Add the last message to the user object
+        
+        // Add last message info to each user
+        foreach ($following as $user) {
+            $lastMessage = Message::where(function($query) use ($user) {
+                    $query->where('sender_id', Auth::id())
+                          ->where('receiver_id', $user->id);
+                })
+                ->orWhere(function($query) use ($user) {
+                    $query->where('sender_id', $user->id)
+                          ->where('receiver_id', Auth::id());
+                })
+                ->latest()
+                ->first();
+                
             $user->last_message = $lastMessage ? $lastMessage->message : null;
             $user->last_message_time = $lastMessage ? $lastMessage->created_at : null;
-            $user->is_sender = $lastMessage ? ($lastMessage->sender_id == $authUserId) : false;
-
-            return $user;
-        });
-
-        return view('chat.following', compact('following'));
+        }
+        
+        return view('chat.index', compact('following'));
     }
-
-    public function chatWithUser($userId)
+    
+    /**
+     * Show conversation with a specific user
+     */
+    public function show($userId)
     {
         $user = User::findOrFail($userId);
-        return view('chat.conversation', compact('user'));
+        
+        return view('chat.show', compact('user'));
     }
-
-    public function fetchMessages($userId)
+    
+    /**
+     * Get messages between current user and another user
+     */
+    public function getMessages($userId)
     {
-        return Message::where(function ($query) use ($userId) {
-            $query->where('sender_id', Auth::id())->where('receiver_id', $userId);
-        })->orWhere(function ($query) use ($userId) {
-            $query->where('sender_id', $userId)->where('receiver_id', Auth::id());
-        })->orderBy('created_at', 'asc')->get();
+        $messages = Message::where(function($query) use ($userId) {
+                $query->where('sender_id', Auth::id())
+                      ->where('receiver_id', $userId);
+            })
+            ->orWhere(function($query) use ($userId) {
+                $query->where('sender_id', $userId)
+                      ->where('receiver_id', Auth::id());
+            })
+            ->orderBy('created_at')
+            ->get();
+            
+        return response()->json($messages);
     }
-
+    
+    /**
+     * Send a new message
+     */
     public function sendMessage(Request $request)
     {
-        $request->validate([
-            'receiver_id' => 'required|exists:users,id',
-            'message' => 'required|string'
-        ]);
-
-        $message = Message::create([
-            'sender_id' => Auth::id(),
-            'receiver_id' => $request->receiver_id,
-            'message' => $request->message,
-        ]);
-
-        return response()->json($message);
+        try {
+            $validated = $request->validate([
+                'receiver_id' => 'required|exists:users,id',
+                'message' => 'required|string|max:1000'
+            ]);
+            
+            $message = Message::create([
+                'sender_id' => Auth::id(),
+                'receiver_id' => $validated['receiver_id'],
+                'message' => $validated['message'],
+                'is_read' => false
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to send message', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to send message: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -46,10 +46,15 @@ Route::post('/follow/{id}', [FollowController::class, 'follow'])->name('follow')
 Route::post('/unfollow/{id}', [FollowController::class, 'unfollow'])->name('unfollow');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/chat', [ChatController::class, 'followingList'])->name('chat.list');
-    Route::get('/chat/{user}', [ChatController::class, 'chatWithUser'])->name('chat.user');
-    Route::get('/chat/messages/{user}', [ChatController::class, 'fetchMessages'])->name('chat.messages');
-    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+    // Chat routes
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{user}', [ChatController::class, 'show'])->name('chat.show');
+
+    // API routes for chat functionality
+    Route::prefix('api')->group(function () {
+        Route::get('/chat/messages/{user}', [ChatController::class, 'getMessages']);
+        Route::post('/chat/send', [ChatController::class, 'sendMessage']);
+    });
 });
 
 Route::get('/search', [SearchController::class, 'search'])->name('search');
