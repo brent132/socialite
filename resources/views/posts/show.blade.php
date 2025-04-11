@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="container max-w-[768px] mx-auto py-4">
-    <div class="bg-white shadow-sm rounded-xl overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl overflow-hidden transition-colors duration-200">
         <!-- Header with user info -->
-        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+        <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700">
             <div class="flex items-center gap-3">
                 <div>
-                    <img src="{{$post->user->profile->profileImage() }}" alt="" class="w-[40px] h-[40px] rounded-full object-cover border-2 border-gray-100">
+                    <img src="{{$post->user->profile->profileImage() }}" alt="" class="w-[40px] h-[40px] rounded-full object-cover border-2 border-gray-100 dark:border-gray-700">
                 </div>
-                <h3 class="text-sm font-semibold">
+                <h3 class="text-sm font-semibold dark:text-gray-200">
                     <a href="/profile/{{ $post->user->id }}" class="hover:text-blue-500 transition-colors">{{ $post->user->username }}</a>
                 </h3>
             </div>
@@ -30,18 +30,18 @@
 
                 @can('delete', $post)
                 <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="p-1 hover:bg-gray-100 rounded-full">
+                    <button @click="open = !open" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
                         </svg>
                     </button>
                     <div x-show="open"
                         @click.away="open = false"
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 transition-colors duration-200">
                         <form action="{{ route('posts.destroy', $post) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
                                 Delete Post
                             </button>
                         </form>
@@ -57,14 +57,14 @@
         </div>
 
         <!-- Post Content -->
-        <div class="p-4">
+        <div class="p-4 dark:text-gray-200">
             <!-- Like and Comment Counts -->
             <div class="flex items-center gap-4 mb-4">
                 <div class="flex items-center gap-1" x-data="{ commentCount: {{ $post->comments->count() }} }">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    <span class="text-sm text-gray-500" x-text="commentCount"></span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400" x-text="commentCount"></span>
                 </div>
 
                 <div x-data="likeSystem({{ $post->id }}, {{ $post->likedBy(auth()->user()) ? 'true' : 'false' }}, {{ $post->likes->count() }})" class="flex items-center gap-1">
@@ -84,16 +84,16 @@
 
             <!-- Caption -->
             <div class="mb-4">
-                <p class="text-sm">
-                    <span class="font-semibold">{{ $post->user->username }}</span>
+                <p class="text-sm dark:text-gray-300">
+                    <span class="font-semibold dark:text-gray-200">{{ $post->user->username }}</span>
                     {{ $post->caption }}
                 </p>
-                <p class="text-xs text-gray-500 mt-1">{{ $post->created_at->diffForHumans() }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $post->created_at->diffForHumans() }}</p>
             </div>
 
             <!-- Comments Section -->
-            <div x-data="commentsSystem" class="border-t border-gray-100 pt-4">
-                <h3 class="text-sm font-semibold mb-4">Comments</h3>
+            <div x-data="commentsSystem" class="border-t border-gray-100 dark:border-gray-700 pt-4">
+                <h3 class="text-sm font-semibold mb-4 dark:text-gray-200">Comments</h3>
 
                 <!-- Add Comment Form -->
                 <div class="flex items-start gap-3 mb-4">
@@ -105,7 +105,7 @@
                                 x-model="newComment"
                                 @input="autoGrow($event.target)"
                                 placeholder="Add a comment..."
-                                class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 resize-none overflow-hidden min-h-[40px]"
+                                class="flex-1 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 dark:focus:border-blue-500 resize-none overflow-hidden min-h-[40px]"
                                 rows="1"
                                 required></textarea>
                             <button
@@ -135,7 +135,7 @@
                         <div class="flex justify-end gap-2 mt-4">
                             <button
                                 @click="showEditModal = false"
-                                class="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors duration-200">
+                                class="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors duration-200">
                                 Cancel
                             </button>
                             <button

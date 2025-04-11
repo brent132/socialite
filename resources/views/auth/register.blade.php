@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))" :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="utf-8">
@@ -33,23 +33,29 @@
             background: white;
             border-radius: 1rem;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .dark .register-card {
+            background: #1f2937;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
     <div class="min-h-screen flex">
         <!-- Left Side - Logo Section with enhanced styling -->
-        <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-50 to-indigo-100 items-center justify-center">
+        <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-indigo-900 items-center justify-center transition-colors duration-200">
             <div class="text-center p-12">
                 <img src="/SVG/Socialite logo.svg" alt="Socialite Logo" class="w-40 h-40 mx-auto mb-6 hover-transform">
                 <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">Socialite</h1>
-                <p class="mt-6 text-gray-700 text-lg max-w-md mx-auto">Join our community and start sharing your moments with friends and family</p>
+                <p class="mt-6 text-gray-700 dark:text-gray-300 text-lg max-w-md mx-auto">Join our community and start sharing your moments with friends and family</p>
             </div>
         </div>
 
         <!-- Right Side - Form Section with improved layout -->
-        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-200">
             <div class="w-full max-w-md">
                 <!-- Mobile logo (visible only on small screens) -->
                 <div class="lg:hidden text-center mb-8">
@@ -57,16 +63,25 @@
                     <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">Socialite</h1>
                 </div>
 
-                <div class="register-card px-8 py-8">
-                    <h2 class="text-2xl font-bold mb-8 text-center text-gray-800">Create Your Account</h2>
+                <div class="register-card px-8 py-8 relative">
+                    <!-- Dark Mode Toggle -->
+                    <button @click="darkMode = !darkMode" class="absolute top-4 right-4 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none">
+                        <svg x-show="!darkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                        <svg x-show="darkMode" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </button>
+                    <h2 class="text-2xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">Create Your Account</h2>
 
                     <form method="POST" action="{{ route('register') }}">
                         @csrf
 
                         <div class="mb-5">
-                            <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">{{ __('Full Name') }}</label>
+                            <label for="name" class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">{{ __('Full Name') }}</label>
                             <input id="name" type="text"
-                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 leading-tight focus:outline-none @error('name') border-red-500 @enderror"
+                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none @error('name') border-red-500 @enderror"
                                 name="name" value="{{ old('name') }}" required autofocus>
                             @error('name')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
@@ -74,9 +89,9 @@
                         </div>
 
                         <div class="mb-5">
-                            <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">{{ __('Email Address') }}</label>
+                            <label for="email" class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">{{ __('Email Address') }}</label>
                             <input id="email" type="email"
-                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 leading-tight focus:outline-none @error('email') border-red-500 @enderror"
+                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none @error('email') border-red-500 @enderror"
                                 name="email" value="{{ old('email') }}" required>
                             @error('email')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
@@ -84,9 +99,9 @@
                         </div>
 
                         <div class="mb-5">
-                            <label for="username" class="block text-gray-700 text-sm font-semibold mb-2">{{ __('Username') }}</label>
+                            <label for="username" class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">{{ __('Username') }}</label>
                             <input id="username" type="text"
-                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 leading-tight focus:outline-none @error('username') border-red-500 @enderror"
+                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none @error('username') border-red-500 @enderror"
                                 name="username" value="{{ old('username') }}" required>
                             @error('username')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
@@ -94,9 +109,9 @@
                         </div>
 
                         <div class="mb-5">
-                            <label for="password" class="block text-gray-700 text-sm font-semibold mb-2">{{ __('Password') }}</label>
+                            <label for="password" class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">{{ __('Password') }}</label>
                             <input id="password" type="password"
-                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 leading-tight focus:outline-none @error('password') border-red-500 @enderror"
+                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none @error('password') border-red-500 @enderror"
                                 name="password" required>
                             @error('password')
                             <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
@@ -104,9 +119,9 @@
                         </div>
 
                         <div class="mb-7">
-                            <label for="password-confirm" class="block text-gray-700 text-sm font-semibold mb-2">{{ __('Confirm Password') }}</label>
+                            <label for="password-confirm" class="block text-gray-700 dark:text-gray-300 text-sm font-semibold mb-2">{{ __('Confirm Password') }}</label>
                             <input id="password-confirm" type="password"
-                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 leading-tight focus:outline-none"
+                                class="input-field w-full py-3 px-4 rounded-lg text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none"
                                 name="password_confirmation" required>
                         </div>
 
@@ -117,7 +132,7 @@
                         </div>
 
                         <div class="text-center">
-                            <p class="text-gray-600 mb-2">Already have an account?</p>
+                            <p class="text-gray-600 dark:text-gray-400 mb-2">Already have an account?</p>
                             <a href="{{ route('login') }}" class="inline-block text-indigo-600 hover:text-indigo-800 font-semibold transition-colors duration-300">
                                 Login to Your Account
                             </a>

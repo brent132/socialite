@@ -119,7 +119,7 @@
                                         }
                                     "
                                     @click.away="searchResults = []"
-                                    class="bg-gray-100 pl-10 pr-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-64 transition-all">
+                                    class="bg-gray-100 dark:bg-gray-700 dark:text-gray-200 pl-10 pr-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-500 w-64 transition-all">
                             </div>
 
                             <!-- Search Results Dropdown -->
@@ -158,8 +158,8 @@
                                 <div class="relative">
                                     <img src="{{ Auth::user()->profile->profileImage() }}"
                                         alt="Profile"
-                                        class="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm">
-                                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white"></div>
+                                        class="w-9 h-9 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-sm">
+                                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border border-white dark:border-gray-700"></div>
                                 </div>
                                 <span class="font-medium text-sm hidden md:block">{{ Auth::user()->username }}</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -3,7 +3,7 @@
 @section('content')
 <div class="container max-w-[1000px] mx-auto px-4 py-8">
     <!-- Profile Header -->
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden transition-colors duration-200">
         <div class="relative h-48">
             @if($user->profile->backgroundImage())
             <!-- Background Image -->
@@ -17,7 +17,7 @@
 
             <!-- Profile Picture -->
             <div class="absolute -bottom-16 left-8">
-                <div class="w-32 h-32 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white bg-white">
+                <div class="w-32 h-32 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-xl border-4 border-white dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-200">
                     <img src="{{ $user->profile->profileImage() }}"
                         alt="{{ $user->username }}'s profile"
                         class="w-full h-full object-cover">
@@ -30,8 +30,8 @@
                 <!-- Username and Actions -->
                 <div class="flex flex-col md:flex-row md:items-center gap-4 justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">{{ $user->username }}</h1>
-                        <p class="text-gray-500 text-sm">Joined {{ $user->created_at->diffForHumans() }}</p>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $user->username }}</h1>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Joined {{ $user->created_at->diffForHumans() }}</p>
                     </div>
 
                     <div class="flex flex-wrap gap-3">
@@ -128,26 +128,26 @@
                 </div>
 
                 <!-- Stats -->
-                <div class="flex gap-8 py-4 border-y border-gray-100">
+                <div class="flex gap-8 py-4 border-y border-gray-100 dark:border-gray-700">
                     <div class="text-center">
-                        <span class="block text-2xl font-bold text-gray-900">{{ $postCount }}</span>
-                        <span class="text-sm text-gray-600">Posts</span>
+                        <span class="block text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $postCount }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Posts</span>
                     </div>
                     <a href="{{ route('following.page', $user->id) }}"
                         class="text-center hover:text-blue-500 transition-colors group">
-                        <span id="followerCount" class="block text-2xl font-bold text-gray-900 group-hover:text-blue-500">{{ $followerCount }}</span>
-                        <span class="text-sm text-gray-600">Followers</span>
+                        <span id="followerCount" class="block text-2xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-500">{{ $followerCount }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Followers</span>
                     </a>
                     <a href="{{ route('following.page', $user->id) }}"
                         class="text-center hover:text-blue-500 transition-colors group">
-                        <span class="block text-2xl font-bold text-gray-900 group-hover:text-blue-500">{{ $followingCount }}</span>
-                        <span class="text-sm text-gray-600">Following</span>
+                        <span class="block text-2xl font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-500">{{ $followingCount }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Following</span>
                     </a>
                 </div>
 
                 <!-- Bio -->
                 <div class="max-w-2xl">
-                    <p class="text-gray-700 leading-relaxed">
+                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
                         {{ $user->profile->description ?: 'No bio yet.' }}
                     </p>
                 </div>

@@ -3,14 +3,14 @@
 @section('content')
 <div class="container max-w-[640px] mx-auto py-4">
     @foreach($posts as $post)
-    <div class="bg-white shadow-sm rounded-xl overflow-hidden mb-8">
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl overflow-hidden mb-8 transition-colors duration-200">
         <!-- Header with user info -->
-        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+        <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700">
             <div class="flex items-center gap-3">
                 <div>
-                    <img src="{{ $post->user->profile->profileImage() }}" alt="" class="w-[40px] h-[40px] rounded-full object-cover border-2 border-gray-100">
+                    <img src="{{ $post->user->profile->profileImage() }}" alt="" class="w-[40px] h-[40px] rounded-full object-cover border-2 border-gray-100 dark:border-gray-700">
                 </div>
-                <h3 class="text-sm font-semibold">
+                <h3 class="text-sm font-semibold dark:text-gray-200">
                     <a href="/profile/{{ $post->user->id }}" class="hover:text-blue-500 transition-colors">{{ $post->user->username }}</a>
                 </h3>
             </div>
@@ -39,7 +39,7 @@
         </div>
 
         <!-- Post Content -->
-        <div class="p-5">
+        <div class="p-5 dark:text-gray-200">
             <!-- Like system and comments count -->
             <div class="flex items-center gap-4 mb-3">
                 <div x-data="likeSystem({{ $post->id }}, {{ $post->likedBy(auth()->user()) ? 'true' : 'false' }}, {{ $post->likes->count() }})">
@@ -95,8 +95,8 @@
 
             <!-- Caption -->
             <div class="mb-4">
-                <p class="text-sm">
-                    <span class="font-semibold">{{ $post->user->username }}</span> {{ $post->caption }}
+                <p class="text-sm dark:text-gray-300">
+                    <span class="font-semibold dark:text-gray-200">{{ $post->user->username }}</span> {{ $post->caption }}
                 </p>
             </div>
 
@@ -110,7 +110,7 @@
                             <textarea
                                 id="commentText-{{ $post->id }}"
                                 placeholder="Add a comment..."
-                                class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 resize-none overflow-hidden min-h-[40px]"
+                                class="flex-1 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-300 dark:focus:border-blue-500 resize-none overflow-hidden min-h-[40px]"
                                 rows="1"
                                 required
                                 oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';"></textarea>
