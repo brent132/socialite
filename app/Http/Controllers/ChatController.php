@@ -33,6 +33,7 @@ class ChatController extends Controller
                 
             $user->last_message = $lastMessage ? $lastMessage->message : null;
             $user->last_message_time = $lastMessage ? $lastMessage->created_at : null;
+            $user->is_sender = $lastMessage ? ($lastMessage->sender_id === Auth::id()) : false;
         }
         
         return view('chat.index', compact('following'));
@@ -103,3 +104,4 @@ class ChatController extends Controller
         }
     }
 }
+
