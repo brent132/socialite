@@ -281,64 +281,48 @@
             },
 
             addComment() {
-                if (this.newComment.trim() === '') return;
-
+                if (this.newComment.trim() === '' || this.isSubmitting) return;
                 this.isSubmitting = true;
 
-                fetch('{{ route("comments.store", $post) }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            comment: this.newComment
-                        })
+                fetch(`/p/${this.postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        comment: this.newComment
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // Create a comment object with the response data
-                            const newComment = {
-                                id: data.comment.id,
-                                user_id: data.comment.user_id,
-                                post_id: data.comment.post_id,
-                                comment: data.comment.comment,
-                                created_at: data.comment.created_at,
-                                likes_count: 0,
-                                liked: false,
-                                user: data.user
-                            };
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Add the new comment with all required properties
+                        this.comments.unshift({
+                            id: data.comment.id,
+                            comment: data.comment.comment,
+                            user: data.user,
+                            user_id: data.user.id,
+                            liked: false,
+                            likes_count: 0,
+                            created_at: new Date().toISOString()
+                        });
 
-                            this.comments.unshift(newComment);
-                            this.newComment = '';
-
-                            // Update comment count in the UI
-                            const commentCountEl = document.querySelector('.flex.items-center.gap-1[x-data]');
-                            if (commentCountEl && commentCountEl.__x) {
-                                commentCountEl.__x.getUnobservedData().commentCount++;
+                        // Reset textarea height and clear input
+                        this.newComment = '';
+                        this.$nextTick(() => {
+                            if (this.$refs.commentTextarea) {
+                                this.$refs.commentTextarea.style.height = '40px';
                             }
-
-                            // Reset textarea height and clear input
-                            this.newComment = '';
-                            this.$nextTick(() => {
-                                if (this.$refs.commentTextarea) {
-                                    this.$refs.commentTextarea.style.height = '40px'; // Reset to default height
-                                }
-                            });
-                        }
-                        this.isSubmitting = false;
-                    })
-                    .catch(error => {
-                        console.error('Error adding comment:', error);
-                        this.isSubmitting = false;
-                    });
+                        });
+                    }
+                    this.isSubmitting = false;
+                })
+                .catch(error => {
+                    console.error('Error adding comment:', error);
+                    this.isSubmitting = false;
+                });
             },
 
             editComment(comment) {
@@ -468,3 +452,4 @@
     });
 </script>
 @endsection
+

@@ -1,6 +1,37 @@
 @extends('layouts.app')
 
 @section('content')
+<script>
+    function commentLikeSystem(commentId, initialLiked, initialCount) {
+        return {
+            liked: initialLiked,
+            likesCount: initialCount,
+
+            toggleLike() {
+                fetch(`/comments/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            this.liked = data.liked;
+                            this.likesCount = data.count;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        }
+    }
+</script>
 <div class="container max-w-[640px] mx-auto py-4">
     @foreach($posts as $post)
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl overflow-hidden mb-8 transition-colors duration-200">
@@ -140,12 +171,12 @@
                     @foreach($comments as $comment)
                     <div class="flex items-start gap-2 mb-3 group"
                         x-data="{
-                             comment: {
-                                 id: {{ $comment->id }},
-                                 liked: {{ $comment->liked ? 'true' : 'false' }},
-                                 likes_count: {{ $comment->likes_count }}
-                             }
-                         }">
+                            comment: {
+                                id: {{ $comment->id }},
+                                liked: {{ $comment->likes()->where('user_id', auth()->id())->exists() ? 'true' : 'false' }},
+                                likes_count: {{ $comment->likes()->count() }}
+                            }
+                        }">
                         <img src="{{ $comment->user->profile->profileImage() }}" class="w-7 h-7 rounded-full object-cover" alt="{{ $comment->user->username }}">
                         <div class="flex-1">
                             <div class="flex justify-between items-start">
@@ -154,7 +185,7 @@
                                     <span class="text-sm">{{ $comment->comment }}</span>
                                 </div>
                                 @if($comment->user_id == auth()->id())
-                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('{{ $comment->id }}', '{{ addslashes($comment->comment) }}')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -168,20 +199,25 @@
                                 </div>
                                 @endif
                             </div>
-                            <div class="flex items-center gap-2 mt-1">
+                            <div class="flex items-center gap-2 mt-1"
+                                x-data="commentLikeSystem(
+                                    {{ $comment->id }},
+                                    {{ $comment->likes()->where('user_id', auth()->id())->exists() ? 'true' : 'false' }},
+                                    {{ $comment->likes()->count() }}
+                                 )">
                                 <button
-                                    @click="toggleLikeComment(comment)"
+                                    @click="toggleLike"
                                     class="text-xs hover:text-gray-700 flex items-center gap-1"
-                                    :class="{'text-red-500 hover:text-red-700': comment.liked, 'text-gray-500': !comment.liked}">
+                                    :class="{'text-red-500 hover:text-red-700': liked, 'text-gray-500': !liked}">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         class="h-3 w-3"
-                                        :fill="comment.liked ? 'currentColor' : 'none'"
+                                        :fill="liked ? 'currentColor' : 'none'"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                     </svg>
-                                    <span x-text="comment.likes_count"></span>
+                                    <span x-text="likesCount"></span>
                                 </button>
                                 <span class="text-xs text-gray-400">
                                     @php
@@ -324,7 +360,7 @@
                                     <span class="font-semibold text-sm">${data.user.username}</span>
                                     <span class="text-sm">${data.comment.comment}</span>
                                 </div>
-                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div class="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('${data.comment.id}', '${data.comment.comment.replace(/'/g, "\\'")}')">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -337,13 +373,21 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <div class="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="flex items-center gap-2 mt-1" x-data="commentLikeSystem(${data.comment.id}, false, 0)">
+                                <button
+                                    @click="toggleLike"
+                                    class="text-xs hover:text-gray-700 flex items-center gap-1"
+                                    :class="{'text-red-500 hover:text-red-700': liked, 'text-gray-500': !liked}">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3 w-3"
+                                        :fill="liked ? 'currentColor' : 'none'"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                     </svg>
-                                    <span>0</span>
-                                </div>
+                                    <span x-text="likesCount">0</span>
+                                </button>
                                 <span class="text-xs text-gray-400">just now</span>
                             </div>
                         </div>
@@ -361,6 +405,11 @@
                         commentsList.appendChild(newComment);
                     }
 
+                    // Initialize Alpine.js components on the new comment
+                    if (window.Alpine) {
+                        window.Alpine.initTree(newComment);
+                    }
+
                     // Update the comment count
                     const commentCountElement = document.getElementById(`post-${postId}-comment-count`);
                     if (commentCountElement) {
@@ -369,13 +418,15 @@
                     }
                 }
 
-                // Hide loading indicator
+                // Hide loading indicator and show post button again
                 document.getElementById(`commentLoading-${postId}`).classList.add('hidden');
+                document.getElementById(`postButton-${postId}`).classList.remove('hidden');
             })
             .catch(error => {
                 console.error('Error adding comment:', error);
-                // Hide loading indicator
+                // Hide loading indicator and show post button again
                 document.getElementById(`commentLoading-${postId}`).classList.add('hidden');
+                document.getElementById(`postButton-${postId}`).classList.remove('hidden');
             });
     }
 
