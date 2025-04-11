@@ -139,13 +139,14 @@
         <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 px-4 md:px-0 mb-4">Posts</h2>
 
         @if($user->posts && $user->posts->count() > 0)
-            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-3 md:gap-6">
-                @foreach($user->posts->sortByDesc('created_at') as $post)
-                <div class="relative group aspect-square" x-data="{
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-1 sm:gap-3 md:gap-6">
+            @foreach($user->posts->sortByDesc('created_at') as $post)
+            <div class="relative group aspect-square cursor-pointer" x-data="{
                         likeCount: {{ $post->likes ? $post->likes->count() : 0 }},
                         isLiked: {{ $post->likes && $post->likes->where('user_id', auth()->id())->count() > 0 ? 'true' : 'false' }},
-                        showOverlay: false,
-                        toggleLike() {
+                        toggleLike(event) {
+                            event.preventDefault();
+                            event.stopPropagation();
                             fetch('/p/{{ $post->id }}/like', {
                                 method: 'POST',
                                 headers: {
@@ -159,16 +160,19 @@
                                 this.likeCount = data.count;
                                 this.isLiked = data.liked;
                             });
+                        },
+                        goToPost() {
+                            window.location.href = '/p/{{ $post->id }}';
                         }
-                    }"
-                    @click.self="showOverlay = !showOverlay">
-                    
+                    }}"
+                @click="goToPost()">
+
+                <!-- Wrap everything in a link to the post page -->
+                <a href="/p/{{ $post->id }}" class="block w-full h-full">
                     <!-- Image -->
-                    <a href="/p/{{ $post->id }}" class="block w-full h-full">
-                        <img src="/storage/{{ $post->image }}"
-                            alt="Post by {{ $user->username }}"
-                            class="w-full h-full object-cover">
-                    </a>
+                    <img src="/storage/{{ $post->image }}"
+                        alt="Post by {{ $user->username }}"
+                        class="w-full h-full object-cover">
 
                     <!-- Overlay -->
                     <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
@@ -190,45 +194,18 @@
                             </div>
                         </div>
                     </div>
+                </a>
 
-                    <!-- Mobile Touch Overlay -->
-                    <div x-show="showOverlay"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0"
-                         class="absolute inset-0 bg-black bg-opacity-40 md:hidden flex items-center justify-center"
-                         @click.away="showOverlay = false">
-                        <div class="flex items-center space-x-6 text-white">
-                            <div class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                <span class="font-semibold" x-text="likeCount"></span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                <span class="font-semibold">{{ $post->comments ? $post->comments->count() : 0 }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
+                <!-- Mobile Touch Overlay - Removed as it's redundant with the main overlay -->
+                <!-- We're now using a single link that wraps the entire post item -->
             </div>
+            @endforeach
+        </div>
         @else
-            <div class="text-center py-8 px-4">
-                <p class="text-gray-500 dark:text-gray-400">No posts yet.</p>
-            </div>
+        <div class="text-center py-8 px-4">
+            <p class="text-gray-500 dark:text-gray-400">No posts yet.</p>
+        </div>
         @endif
     </div>
 </div>
 @endsection
-
-
-
-
-

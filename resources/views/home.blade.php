@@ -1,40 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<script>
-    function commentLikeSystem(commentId, initialLiked, initialCount) {
-        return {
-            liked: initialLiked,
-            likesCount: initialCount,
-
-            toggleLike() {
-                fetch(`/comments/${commentId}/like`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'same-origin'
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            this.liked = data.liked;
-                            this.likesCount = data.count;
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-        }
-    }
-</script>
-<div class="container max-w-[640px] mx-auto py-4">
+<div class="container max-w-[768px] mx-auto py-4">
     @foreach($posts as $post)
-    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl overflow-hidden mb-8 transition-colors duration-200">
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl overflow-hidden mb-6 transition-colors duration-200">
         <!-- Header with user info -->
         <div class="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-700">
             <div class="flex items-center gap-3">
@@ -45,7 +14,7 @@
                     <a href="/profile/{{ $post->user->id }}" class="hover:text-blue-500 transition-colors">{{ $post->user->username }}</a>
                 </h3>
             </div>
-            <div>
+            <div class="flex gap-4 items-center">
                 @cannot('update', $post->user->profile)
                 @if(Auth::user()->following->contains($post->user))
                 <form action="{{ route('unfollow', $post->user->profile) }}" method="POST">
@@ -59,57 +28,43 @@
                 </form>
                 @endif
                 @endcannot
+
+                @can('delete', $post)
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open"
+                        @click.away="open = false"
+                        class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 transition-colors duration-200">
+                        <form action="{{ route('posts.destroy', $post) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+                                Delete Post
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endcan
             </div>
         </div>
 
         <!-- Post Image -->
-        <div class="w-full aspect-square">
+        <div class="w-full">
             <a href="/p/{{ $post->id }}">
-                <img src="/storage/{{ $post->image }}" alt="Post by {{ $post->user->username }}" class="w-full h-full object-cover">
+                <img src="/storage/{{ $post->image }}" alt="Post Image" class="w-full object-cover">
             </a>
         </div>
 
         <!-- Post Content -->
-        <div class="p-5 dark:text-gray-200">
-            <!-- Like system and comments count -->
-            <div class="flex items-center gap-4 mb-3">
-                <div x-data="likeSystem({{ $post->id }}, {{ $post->likedBy(auth()->user()) ? 'true' : 'false' }}, {{ $post->likes->count() }})">
-                    <button type="button"
-                        @click="toggleLike"
-                        class="flex items-center gap-1 transition-transform hover:scale-110">
-                        <svg x-show="!liked"
-                            x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 scale-90"
-                            x-transition:enter-end="opacity-100 scale-100"
-                            class="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                            </path>
-                        </svg>
-                        <svg x-show="liked"
-                            x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 scale-90"
-                            x-transition:enter-end="opacity-100 scale-100"
-                            class="w-6 h-6 text-red-500"
-                            fill="currentColor"
-                            viewBox="0 0 24 24">
-                            <path fill-rule="evenodd"
-                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                                clip-rule="evenodd">
-                            </path>
-                        </svg>
-                        <span class="text-sm font-medium" x-text="likeCount"></span>
-                    </button>
-                </div>
-
-                <!-- Comment icon with link to post -->
-                <a href="/p/{{ $post->id }}"
-                    class="flex items-center gap-1 transition-transform hover:scale-110">
+        <div class="p-4 dark:text-gray-200">
+            <!-- Like and Comment Counts -->
+            <div class="flex items-center gap-4 mb-4">
+                <!-- Comment icon -->
+                <div class="flex items-center gap-1 transition-transform hover:scale-110">
                     <svg xmlns="http://www.w3.org/2000/svg"
                         class="h-6 w-6"
                         fill="none"
@@ -120,19 +75,36 @@
                             stroke-width="2"
                             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    <span class="text-sm font-medium">{{ $post->comments ? $post->comments->count() : 0 }}</span>
-                </a>
+                    <span class="text-sm font-medium" id="post-{{ $post->id }}-comment-count">{{ $post->comments ? $post->comments->count() : 0 }}</span>
+                </div>
+
+                <!-- Like button -->
+                <div x-data="likeSystem({{ $post->id }}, {{ $post->likedBy(auth()->user()) ? 'true' : 'false' }}, {{ $post->likes->count() }})" class="flex items-center gap-1 transition-transform hover:scale-110">
+                    <button @click="toggleLike" class="focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-6 w-6 transition-colors duration-200"
+                            :class="liked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'"
+                            :fill="liked ? 'currentColor' : 'none'"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </button>
+                    <span class="text-sm font-medium" x-text="likeCount"></span>
+                </div>
             </div>
 
             <!-- Caption -->
             <div class="mb-4">
                 <p class="text-sm dark:text-gray-300">
-                    <span class="font-semibold dark:text-gray-200">{{ $post->user->username }}</span> {{ $post->caption }}
+                    <span class="font-semibold dark:text-gray-200">{{ $post->user->username }}</span>
+                    {{ $post->caption }}
                 </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $post->created_at->diffForHumans() }}</p>
             </div>
 
             <!-- Comments Section -->
-            <div class="mb-4" id="post-{{ $post->id }}-comments">
+            <div id="post-{{ $post->id }}-comments">
                 <!-- Add Comment Form -->
                 <div class="flex items-start gap-3 mb-4">
                     <img src="{{ auth()->user()->profile->profileImage() }}" class="w-8 h-8 rounded-full object-cover">
@@ -164,19 +136,8 @@
 
                 <!-- Comments List -->
                 <div class="comments-list">
-                    @php
-                    $comments = $post->comments()->with('user.profile')->latest()->take(5)->get();
-                    @endphp
-
-                    @foreach($comments as $comment)
-                    <div class="flex items-start gap-2 mb-3 group"
-                        x-data="{
-                            comment: {
-                                id: {{ $comment->id }},
-                                liked: {{ $comment->likes()->where('user_id', auth()->id())->exists() ? 'true' : 'false' }},
-                                likes_count: {{ $comment->likes()->count() }}
-                            }
-                        }">
+                    @foreach($post->comments->take(5) as $comment)
+                    <div class="comment-item group flex space-x-3 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0" data-comment-id="{{ $comment->id }}">
                         <img src="{{ $comment->user->profile->profileImage() }}" class="w-7 h-7 rounded-full object-cover" alt="{{ $comment->user->username }}">
                         <div class="flex-1">
                             <div class="flex justify-between items-start">
@@ -199,10 +160,10 @@
                                 </div>
                                 @endif
                             </div>
-                            <div class="flex items-center gap-2 mt-1"
-                                x-data="commentLikeSystem(
-                                    {{ $comment->id }},
-                                    {{ $comment->likes()->where('user_id', auth()->id())->exists() ? 'true' : 'false' }},
+                            <div class="flex items-center gap-2 mt-1" 
+                                 x-data="commentLikeSystem(
+                                    {{ $comment->id }}, 
+                                    {{ $comment->likes()->where('user_id', auth()->id())->exists() ? 'true' : 'false' }}, 
                                     {{ $comment->likes()->count() }}
                                  )">
                                 <button
@@ -242,25 +203,22 @@
                     @endforeach
                 </div>
 
-                <!-- Load More / View All Comments -->
-                <div class="flex justify-between items-center mt-2">
+                <!-- Load More Comments -->
+                <div class="flex justify-center mt-2">
                     @if($post->comments->count() > 5)
-                    <a href="/p/{{ $post->id }}#comments" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
-                        Load more
-                    </a>
+                    <button type="button" onclick="loadMoreComments({{ $post->id }})" class="text-sm text-gray-500 hover:text-gray-700 font-medium px-4 py-2 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-md" id="loadMoreBtn-{{ $post->id }}">
+                        Load more comments
+                    </button>
+                    @else
+                    <button type="button" onclick="loadMoreComments({{ $post->id }})" class="hidden text-sm text-gray-500 hover:text-gray-700 font-medium px-4 py-2 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-md" id="loadMoreBtn-{{ $post->id }}">
+                        Load more comments
+                    </button>
                     @endif
-                    <a href="/p/{{ $post->id }}#comments" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
-                        View all {{ $post->comments->count() }} comments
-                    </a>
                 </div>
             </div>
         </div>
     </div>
     @endforeach
-
-    <div class="my-8">
-        {{ $posts->links() }}
-    </div>
 </div>
 
 <!-- Edit Comment Modal -->
@@ -290,263 +248,63 @@
 </div>
 
 <script>
-    function editComment(commentId, commentText) {
-        // Set the form action
-        document.getElementById('editCommentForm').action = `/comments/${commentId}`;
-
-        // Set the comment text
-        document.getElementById('editCommentText').value = commentText;
-
-        // Show the modal
-        document.getElementById('editCommentModal').classList.remove('hidden');
-    }
-
-    function closeEditModal() {
-        document.getElementById('editCommentModal').classList.add('hidden');
-    }
-
-    // Close modal when clicking outside
-    document.getElementById('editCommentModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeEditModal();
-        }
-    });
-
-    function submitComment(postId) {
-        // Get the comment text
-        const commentText = document.getElementById(`commentText-${postId}`).value;
-
-        if (!commentText.trim()) {
-            return;
-        }
-
-        // Hide post button and show loading indicator
-        document.getElementById(`postButton-${postId}`).classList.add('hidden');
-        document.getElementById(`commentLoading-${postId}`).classList.remove('hidden');
-
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-        // Submit the comment via AJAX
-        fetch(`/p/${postId}/comments`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    comment: commentText
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('likeSystem', (postId, initialLiked, initialCount) => ({
+            liked: initialLiked,
+            likeCount: initialCount,
+            
+            toggleLike() {
+                fetch(`/p/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Clear the comment text
-                    const textarea = document.getElementById(`commentText-${postId}`);
-                    textarea.value = '';
-                    textarea.style.height = '40px'; // Reset height to default
-
-                    // Create a new comment element
-                    const commentsList = document.querySelector(`#post-${postId}-comments .comments-list`);
-
-                    // Create the HTML for the new comment
-                    const newCommentHtml = `
-                    <div class="flex items-start gap-2 mb-3 group" data-comment-id="${data.comment.id}">
-                        <img src="${data.user.profile_image || '/storage/profile/default-avatar.png'}" class="w-7 h-7 rounded-full object-cover" alt="${data.user.username}">
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="font-semibold text-sm">${data.user.username}</span>
-                                    <span class="text-sm">${data.comment.comment}</span>
-                                </div>
-                                <div class="flex items-center gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                    <button type="button" class="text-gray-500 hover:text-gray-700" onclick="editComment('${data.comment.id}', '${data.comment.comment.replace(/'/g, "\\'")}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button type="button" class="text-gray-500 hover:text-red-500" onclick="deleteComment('${data.comment.id}')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 mt-1" x-data="commentLikeSystem(${data.comment.id}, false, 0)">
-                                <button
-                                    @click="toggleLike"
-                                    class="text-xs hover:text-gray-700 flex items-center gap-1"
-                                    :class="{'text-red-500 hover:text-red-700': liked, 'text-gray-500': !liked}">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="h-3 w-3"
-                                        :fill="liked ? 'currentColor' : 'none'"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
-                                    <span x-text="likesCount">0</span>
-                                </button>
-                                <span class="text-xs text-gray-400">just now</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                    // Add the new comment to the top of the list
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = newCommentHtml;
-                    const newComment = tempDiv.firstElementChild;
-
-                    if (commentsList.firstChild) {
-                        commentsList.insertBefore(newComment, commentsList.firstChild);
-                    } else {
-                        commentsList.appendChild(newComment);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.liked = data.liked;
+                        this.likeCount = data.count;
                     }
-
-                    // Initialize Alpine.js components on the new comment
-                    if (window.Alpine) {
-                        window.Alpine.initTree(newComment);
-                    }
-
-                    // Update the comment count
-                    const commentCountElement = document.getElementById(`post-${postId}-comment-count`);
-                    if (commentCountElement) {
-                        const currentCount = parseInt(commentCountElement.textContent);
-                        commentCountElement.textContent = currentCount + 1;
-                    }
-                }
-
-                // Hide loading indicator and show post button again
-                document.getElementById(`commentLoading-${postId}`).classList.add('hidden');
-                document.getElementById(`postButton-${postId}`).classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error adding comment:', error);
-                // Hide loading indicator and show post button again
-                document.getElementById(`commentLoading-${postId}`).classList.add('hidden');
-                document.getElementById(`postButton-${postId}`).classList.remove('hidden');
-            });
-    }
-
-    function deleteComment(commentId) {
-        if (!confirm('Are you sure you want to delete this comment?')) {
-            return;
-        }
-
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-        // Delete the comment via AJAX
-        fetch(`/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove the comment element
-                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
-                    if (commentElement) {
-                        commentElement.remove();
-                    }
-
-                    // Update the comment count for all posts (since we don't know which post this comment belongs to)
-                    document.querySelectorAll('[id^="post-"][id$="-comment-count"]').forEach(element => {
-                        const currentCount = parseInt(element.textContent);
-                        if (currentCount > 0) {
-                            element.textContent = currentCount - 1;
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting comment:', error);
-            });
-    }
-
-    // Initialize the edit form to handle submission via AJAX
-    document.getElementById('editCommentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const formAction = this.action;
-        const commentText = document.getElementById('editCommentText').value;
-
-        if (!commentText.trim()) {
-            return;
-        }
-
-        // Get CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-        // Update the comment via AJAX
-        fetch(formAction, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    comment: commentText
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Find the comment element
-                    const commentId = formAction.split('/').pop();
-                    const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                .catch(error => console.error('Error:', error));
+            }
+        }));
 
-                    if (commentElement) {
-                        // Update the comment text
-                        const commentTextElement = commentElement.querySelector('.flex-1 > div > div > span:nth-child(2)');
-                        if (commentTextElement) {
-                            commentTextElement.textContent = commentText;
-                        }
+        Alpine.data('commentLikeSystem', (commentId, initialLiked, initialCount) => ({
+            liked: initialLiked,
+            likesCount: initialCount,
+            
+            toggleLike() {
+                fetch(`/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        this.liked = data.liked;
+                        this.likesCount = data.count;
                     }
-
-                    // Close the modal
-                    closeEditModal();
-                }
-            })
-            .catch(error => {
-                console.error('Error updating comment:', error);
-            });
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }));
     });
 </script>
 <script>
-    // Add global function for comment liking
-    window.toggleLikeComment = function(comment) {
-        fetch(`/comments/${comment.id}/like`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Update the comment in the UI
-                    comment.liked = data.liked;
-                    comment.likes_count = data.count;
-                }
-            })
-            .catch(error => {
-                console.error('Error toggling comment like:', error);
-            });
-    };
+    // Store the current user ID for use in the loadMoreComments function
+    window.currentUserId = {{ auth()->id() }};
 </script>
+<script src="/js/comments.js"></script>
 @endsection

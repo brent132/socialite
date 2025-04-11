@@ -27,9 +27,12 @@
             <!-- Chat messages area -->
             <div id="messages-container" class="h-[calc(70vh-200px)] min-h-[300px] overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
                 <!-- Messages will be loaded here -->
-                <div class="flex justify-center my-4">
-                    <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">Loading messages...</span>
-                </div>
+                <button 
+                    id="load-more-button" 
+                    class="w-full text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4 hidden">
+                    Load older messages
+                </button>
+                <div id="messages-content"></div>
             </div>
 
             <!-- Message input form -->
@@ -63,12 +66,16 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const messagesContainer = document.getElementById('messages-container');
+        const messagesContent = document.getElementById('messages-content');
+        const loadMoreButton = document.getElementById('load-more-button');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const messageHidden = document.getElementById('message-hidden');
         const sendButton = document.getElementById('send-button');
         const receiverId = document.getElementById('receiver-id').value;
         const currentUserId = {{ Auth::id() }};
+        let page = 1;
+        let loading = false;
         
         // Auto-resize textarea
         function autoResize() {
@@ -101,25 +108,32 @@
             return date.toLocaleDateString();
         }
         
-        // Load messages
-        function loadMessages() {
-            fetch(`/api/chat/messages/${receiverId}`)
+        // Load messages function with pagination
+        function loadMessages(loadMore = false) {
+            if (loading) return;
+            loading = true;
+            
+            if (!loadMore) {
+                page = 1;
+            }
+            
+            fetch(`/api/chat/messages/${receiverId}?page=${page}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Failed to load messages');
                     }
                     return response.json();
                 })
-                .then(messages => {
+                .then(data => {
                     let html = '';
                     let previousDate = null;
                     
-                    if (messages.length === 0) {
+                    if (data.messages.length === 0 && page === 1) {
                         html = `<div class="flex justify-center my-4">
                             <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">No messages yet. Start a conversation!</span>
                         </div>`;
                     } else {
-                        messages.forEach(message => {
+                        data.messages.forEach(message => {
                             const messageDate = formatDate(message.created_at);
                             
                             if (previousDate !== messageDate) {
@@ -140,14 +154,27 @@
                         });
                     }
                     
-                    messagesContainer.innerHTML = html;
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    if (loadMore) {
+                        messagesContent.insertAdjacentHTML('afterbegin', html);
+                    } else {
+                        messagesContent.innerHTML = html;
+                    }
+                    
+                    // Show/hide load more button based on if there are more messages
+                    loadMoreButton.style.display = data.has_more ? 'block' : 'none';
+                    
+                    if (!loadMore) {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading messages:', error);
-                    messagesContainer.innerHTML = `<div class="flex justify-center my-4">
+                    messagesContent.innerHTML = `<div class="flex justify-center my-4">
                         <span class="text-xs text-red-500 bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full">Failed to load messages. Please refresh the page.</span>
                     </div>`;
+                })
+                .finally(() => {
+                    loading = false;
                 });
         }
         
@@ -204,14 +231,22 @@
             });
         });
         
+        // Load more button click handler
+        loadMoreButton.addEventListener('click', () => {
+            page++;
+            loadMessages(true);
+        });
+        
         // Initial load
         loadMessages();
         
-        // Refresh messages every 10 seconds
-        setInterval(loadMessages, 10000);
+        // Refresh messages every 10 seconds (only the latest messages)
+        setInterval(() => loadMessages(), 10000);
         
         // Focus message input
         messageInput.focus();
     });
 </script>
 @endsection
+
+

@@ -55,17 +55,20 @@ class ChatController extends Controller
     public function getMessages($userId)
     {
         $messages = Message::where(function($query) use ($userId) {
-                $query->where('sender_id', Auth::id())
-                      ->where('receiver_id', $userId);
-            })
-            ->orWhere(function($query) use ($userId) {
-                $query->where('sender_id', $userId)
-                      ->where('receiver_id', Auth::id());
-            })
-            ->orderBy('created_at')
-            ->get();
-            
-        return response()->json($messages);
+            $query->where('sender_id', auth()->id())
+                  ->where('receiver_id', $userId)
+                  ->orWhere(function($query) use ($userId) {
+                      $query->where('sender_id', $userId)
+                            ->where('receiver_id', auth()->id());
+                  });
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(20); // 20 messages per page
+
+        return response()->json([
+            'messages' => $messages->items(),
+            'has_more' => $messages->hasMorePages()
+        ]);
     }
     
     /**
@@ -104,4 +107,5 @@ class ChatController extends Controller
         }
     }
 }
+
 
